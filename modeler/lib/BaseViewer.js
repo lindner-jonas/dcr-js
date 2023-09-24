@@ -25,6 +25,7 @@ import {
 } from './import/Importer';
 
 import saveDCRXML from './DCRXML';
+import XMLConverter from './XMLConverter';
 
 
 
@@ -159,6 +160,10 @@ BaseViewer.prototype.importXML = function (xml, rootBoard) {
     });
 
   });
+};
+
+BaseViewer.prototype.importCustomXML = async function (xml, rootBoard) {
+  return this.importXML(await XMLConverter(xml), rootBoard);
 };
 
 /**

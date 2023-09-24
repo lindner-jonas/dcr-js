@@ -61,7 +61,7 @@ export function importDcrDiagram(diagram, definitions, rootBoard) {
       }
     };
 
-    console.log(DCRTreeWalker);
+    //console.log(DCRTreeWalker);
 
     var walker = new DCRTreeWalker(visitor, translate);
 

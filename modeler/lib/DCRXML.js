@@ -94,12 +94,34 @@ function handleLabels(dcr, element) {
 
 function handleRoles(object, element) {
   if (element.role) {
-    object.custom = {
+    if (!object.custom) object.custom = {};
+    assign(object.custom, {
       roles: {
         role: { _: element.role }
       }
-    };
+    });
   }
+}
+
+function handleDimensions(object, element) {
+  console.log(element);
+  if (!object.custom) object.custom = {};
+  assign(object.custom, {
+    visualization: {
+      location: {
+        $: {
+          xLoc: element.di.bounds.x,
+          yLoc: element.di.bounds.y,
+        }
+      },
+      size: {
+        $: {
+          width: element.di.bounds.width,
+          height: element.di.bounds.height,
+        }
+      }
+    }
+  });
 }
 
 function handleStates(dcr, element) {
@@ -118,6 +140,7 @@ function addEvent(dcr, parent, element, object) {
   handleLabels(dcr, element);
   handleRoles(object, element);
   handleStates(dcr, element);
+  handleDimensions(object, element);
   parent.push(object);
 }
 
@@ -128,6 +151,7 @@ function addNesting(dcr, parent, element, object) {
 
   handleLabels(dcr, element);
   handleRoles(object, element);
+  handleDimensions(object, element);
 
   object.event = [];
 
@@ -144,6 +168,8 @@ function addSubProcess(dcr, parent, element, object) {
       multiInstance: element['multi-instance'],
     });
 
+
+    handleDimensions(object, element);
     object.dcrgraph = generateBoard().dcrgraph;
 
     dcr.dcrgraph.specification.resources.subProcesses.subProcess.push(object);
@@ -157,6 +183,7 @@ function addSubProcess(dcr, parent, element, object) {
 
     handleLabels(dcr, element);
     handleStates(dcr, element);
+    handleDimensions(object, element);
 
     object.event = [];
 
@@ -172,6 +199,16 @@ function addLink(dcr, parent, element, object) {
     $: {
       sourceId: element.sourceRef.id,
       targetId: element.targetRef.id,
+    },
+    custom: {
+      waypoints: {
+        waypoint: element.di.waypoint.map(point => ({ $: { x: point.x, y: point.y } }))
+      },
+      id: {
+        $: {
+          id: element.id,
+        }
+      }
     }
   };
 

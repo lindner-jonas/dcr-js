@@ -64,8 +64,15 @@ export default function DCRTreeWalker(handler, translate) {
       );
     }
 
+    var newCtx = handler.element(element, ctx);
+
+    if (element.boardElements) {
+      handleBoardElements(element.boardElements, newCtx);
+    }
+
     // call handler
-    return handler.element(element, ctx);
+    //return handler.element(element, ctx);
+    return newCtx;
   }
 
   function visitIfDi(element, ctx) {
