@@ -233,8 +233,8 @@ function debounce(fn, timeout) {
 
   return function () {
     if (timer) {
-      clearTimeout(timer);
-    }
+      clearTimeout(timer); 
+    } 
 
     timer = setTimeout(fn, timeout);
   };
