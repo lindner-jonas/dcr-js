@@ -67,7 +67,7 @@ DCRPopupProvider.prototype.getEntries = function(element) {
     {
       id: 'toggle-include-flow',
       //className: 'bpmn-icon-intermediate-event-none',
-      label: 'Include Relation',
+      label: 'Include ghg yRelation',
       flowType: 'include',
       action: (event, entry) => {
         self._modeling.updateProperties(element, {
