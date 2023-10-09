@@ -43,7 +43,8 @@ export function milestoneMarker(marker, path, fill) {
 
 export function spawnMarker(marker, path, fill) {
   svgAttr(path, {
-    markerEnd: marker('proposed-spawn-flow-end', '#4D6180', '#4D6180'),  
+    markerEnd: marker('proposed-spawn-flow-end', '#4D6180', '#4D6180'), 
+    markerStart: marker('proposed-spawn-flow-start', '#4D6180', '#4D6180'),
     stroke: '#4D6180'   
   });
 }
@@ -327,6 +328,27 @@ export function createMarker(addMarker, id, type, fill, stroke) {
       },
       ref: { x: 21.2, y: 7.2 },
       scale: 0.6,
+    });
+  }
+
+
+  if (type === 'proposed-spawn-flow-start') {
+    var includeflowStart = svgCreate('path');
+    svgAttr(includeflowStart, {
+
+      d: 'M 1 5 L 11 10 L 1 15 Z',
+
+    });
+
+    addMarker(id, {
+      element: includeflowStart,
+      attrs: {
+        fill: fill,
+        stroke: stroke,
+        strokeLinecap: 'butt'
+      },
+      ref: { x: 0, y: 10 },
+      scale: 0.65,
     });
   }
 
