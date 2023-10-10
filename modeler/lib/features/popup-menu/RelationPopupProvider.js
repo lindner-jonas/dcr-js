@@ -111,7 +111,7 @@ DCRPopupProvider.prototype.getEntries = function(element) {
   ];
 
   // return entries.filter(entry => entry.flowType !== type && self._dcrRules.isLinkAllowed(element, entry.flowType));
-  return entries.filter(self._dcrRules.isLinkAllowed(element, entry.flowType));
+  return entries.filter(entry => self._dcrRules.isLinkAllowed(element, entry.flowType));
 };
 
 
