@@ -67,7 +67,7 @@ DCRPopupProvider.prototype.getEntries = function(element) {
     {
       id: 'toggle-include-flow',
       //className: 'bpmn-icon-intermediate-event-none',
-      label: 'Include ghg yRelation',
+      label: 'Include Relation',
       flowType: 'include',
       action: (event, entry) => {
         self._modeling.updateProperties(element, {
@@ -110,7 +110,8 @@ DCRPopupProvider.prototype.getEntries = function(element) {
     }
   ];
 
-  return entries.filter(entry => entry.flowType !== type && self._dcrRules.isLinkAllowed(element, entry.flowType));
+  // return entries.filter(entry => entry.flowType !== type && self._dcrRules.isLinkAllowed(element, entry.flowType));
+  return entries.filter(self._dcrRules.isLinkAllowed(element, entry.flowType));
 };
 
 
