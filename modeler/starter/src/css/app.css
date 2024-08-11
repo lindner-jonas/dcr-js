@@ -48,6 +48,35 @@ html, body, #canvas {
   justify-content: flex-end;
 }
 
+#io-editing-tools-buttons .pjs-buttons form select {
+  color: black;
+  background-color: #f8f8f8;
+  border-radius: 3px;
+  display: inline-block;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+  border: solid 1px #cdcdcd;
+  height: 35px;
+  cursor: pointer;
+}
+
+#io-editing-tools-buttons .pjs-buttons form select:hover {
+  color: #2e2e2e;
+}
+
+#io-editing-tools-buttons .pjs-buttons form select:focus {
+  outline: none;
+}
+
+#io-editing-tools-buttons .pjs-buttons form option {
+  color: black;
+  font-weight: normal;
+  text-align: left;
+  cursor: pointer;
+}
+
 .icon-keyboard {
   box-sizing: border-box;
   cursor: pointer;

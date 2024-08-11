@@ -104,7 +104,6 @@ function handleRoles(object, element) {
 }
 
 function handleDimensions(object, element) {
-  console.log(element);
   if (!object.custom) object.custom = {};
   assign(object.custom, {
     visualization: {

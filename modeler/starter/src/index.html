@@ -61,9 +61,14 @@
 
   <div id="io-editing-tools-buttons">
     <div class="pjs-buttons">
-      <button id="js-toggle-flow-appearance" class="pjs-buttons-active" title="Switch between the classic DCR and the semantic transparent notation (Trinh et al., CoopIS'23)">
-        <span>Toggle DCR notation</span>
-      </button>
+      <form>
+        <select id = "js-dropdown-flow-appearance">
+          <option value="defaultMarkers"> Default </option>
+          <option value="proposedMarkers"> Proposed </option>
+          <option value="newMarkers"> New </option>
+        </select>
+        </form>
+
       <button id="js-toggle-keyboard-help" class="pjs-buttons-active" title="Toggle keyboard shortcuts overlay">
         <span class="icon-keyboard pjs-general-icon"> </span>
       </button>

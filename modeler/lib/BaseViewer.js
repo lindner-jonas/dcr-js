@@ -26,6 +26,7 @@ import {
 
 import saveDCRXML from './DCRXML';
 import XMLConverter from './XMLConverter';
+import DCRPortalConverter from './DCRPortalConverter';
 
 
 
@@ -108,18 +109,14 @@ BaseViewer.prototype.importXML = function (xml, rootBoard) {
   var self = this;
 
   return new Promise(function (resolve, reject) {
-
     // hook in pre-parse listeners +
     // allow xml manipulation
     xml = self._emit('import.parse.start', { xml: xml }) || xml;
-
     self._moddle.fromXML(xml, 'dcr:Definitions').then(function (result) {
-
       var definitions = result.rootElement;
       var references = result.references;
       var parseWarnings = result.warnings;
       var elementsById = result.elementsById;
-
       var context = {
         references: references,
         elementsById: elementsById,
@@ -147,7 +144,6 @@ BaseViewer.prototype.importXML = function (xml, rootBoard) {
         return reject(addWarningsToError(err, allWarnings));
       });
     }).catch(function (err) {
-
       self._emit('import.parse.complete', {
         error: err
       });
@@ -164,6 +160,10 @@ BaseViewer.prototype.importXML = function (xml, rootBoard) {
 
 BaseViewer.prototype.importCustomXML = async function (xml, rootBoard) {
   return this.importXML(await XMLConverter(xml), rootBoard);
+};
+
+BaseViewer.prototype.importDCRPortalXML = async function (xml, rootBoard) {
+  return this.importXML(await DCRPortalConverter(xml), rootBoard);
 };
 
 /**

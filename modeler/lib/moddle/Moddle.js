@@ -56,7 +56,7 @@ DCRModdle.prototype.fromXML = function(xmlStr, typeName, options) {
 
   var reader = new Reader(assign({ model: this, lax: false }, options));
   var rootHandler = reader.handler(typeName);
-
+  
   return reader.fromXML(xmlStr, rootHandler);
 };
 

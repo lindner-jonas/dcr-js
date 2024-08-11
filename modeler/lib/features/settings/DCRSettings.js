@@ -4,7 +4,7 @@ import { is } from "../../util/ModelUtil";
 import EventBus from "diagram-js/lib/core/EventBus";
 
 const defaultSettings = {
-  useNewFlowIcons: false
+  markerNotation: "defaultMarkers"
 };
 
 /**
@@ -29,23 +29,11 @@ export default function DCRSettings(commandStack, eventBus) {
   };
 
   // Hook existing buttons into the settings
-  const flowAppearanceButton = document.getElementById('js-toggle-flow-appearance');
-  flowAppearanceButton?.addEventListener('click', () => {
-    this.set('useNewFlowIcons', !this.get('useNewFlowIcons'));
+  const flowAppearanceButton = document.getElementById('js-dropdown-flow-appearance');
+  flowAppearanceButton?.addEventListener('change', (e) => {
+    this.set('markerNotation', e.target.value);
   });
 
-  eventBus.on(['commandStack.postExecute', 'commandStack.reverted'], (event) => {
-    if (event.command === 'settings.update') {
-      const { key, value } = event.context;
-      if (key === 'useNewFlowIcons') {
-        if (this.get('useNewFlowIcons')) {
-          flowAppearanceButton?.classList.add('button-active');
-        } else {
-          flowAppearanceButton?.classList.remove('button-active');
-        }
-      }
-    }
-  });
 
   commandStack.registerHandler('settings.update', UpdateSettingsHandler);
 }

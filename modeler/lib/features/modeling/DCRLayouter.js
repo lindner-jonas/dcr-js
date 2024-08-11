@@ -27,7 +27,7 @@ DCRLayouter.prototype.layoutConnection = function(connection, hints) {
   if (!hints) {
     hints = {};
   }
-
+  
   var source = hints.source || connection.source,
       target = hints.target || connection.target,
       waypoints = hints.waypoints || connection.waypoints,

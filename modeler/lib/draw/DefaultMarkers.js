@@ -1,40 +1,40 @@
 import { attr as svgAttr, create as svgCreate } from 'tiny-svg';
+import { colorCondition, colorResponse, colorInclude, colorExclude, colorMilestone, svgGroup } from './markers.js';
 
 export function conditionMarker(marker, path, fill) {
   svgAttr(path, {
-    markerEnd: marker('default-condition-flow-end', '#FF9800', '#FF9800'),
-    stroke: '#FF9800',   //yellow
+    markerEnd: marker('default-condition-flow-end', colorCondition, colorCondition),
+    stroke: colorCondition,   //yellow
   });
 }
 
 export function responseMarker(marker, path, fill) {
   svgAttr(path, {
-    markerStart: marker('default-response-flow-start', '#039BE5', '#039BE5'),
-    markerEnd: marker('default-response-flow-end', '#039BE5', '#039BE5'),
-    stroke: '#039BE5',   //blue
+    markerStart: marker('default-response-flow-start', colorResponse, colorResponse),
+    markerEnd: marker('default-response-flow-end', colorResponse, colorResponse),
+    stroke: colorResponse,   //blue
+    orient: "auto"
   });
 }
 
 export function includeMarker(marker, path, fill) {
   svgAttr(path, {
-    //markerStart: marker('default-include-flow-start', '#4CAF50', '#4CAF50'),
-    markerEnd: marker('default-include-flow-end', '#4CAF50', '#4CAF50'),
-    stroke: '#4CAF50'   //green
+    markerEnd: marker('default-include-flow-end', colorInclude, colorInclude),
+    stroke: colorInclude   //green
   });
 }
 
 export function excludeMarker(marker, path, fill) {
   svgAttr(path, {
-    //markerStart: marker('default-exclude-flow-start', 'red', 'red'),
-    markerEnd: marker('default-exclude-flow-end', 'red', 'red'),
-    stroke: 'red'   //red
+    markerEnd: marker('default-exclude-flow-end', colorExclude, colorExclude),
+    stroke: colorExclude   //red
   });
 }
 
 export function milestoneMarker(marker, path, fill) {
   svgAttr(path, {
-    markerEnd: marker('default-milestone-flow-end', '#8E24AA', '#8E24AA'),
-    stroke: '#8E24AA'   //purple
+    markerEnd: marker('default-milestone-flow-end', colorMilestone, colorMilestone),
+    stroke: colorMilestone   //purple
   });
 }
 
@@ -61,7 +61,7 @@ export function createMarker(addMarker, id, type, fill, stroke) {
         stroke: stroke,
         strokeLinecap: 'butt',
       },
-      ref: { x: 8.5, y: 5 },
+      ref: { x: 8.7, y: 5 },
       scale: 0.8,
     });
   }
@@ -81,12 +81,24 @@ export function createMarker(addMarker, id, type, fill, stroke) {
         stroke: stroke,
         strokeLinecap: 'butt'
       },
-      ref: { x: 4.2, y: 7.2 },
+      ref: { x: 4.2, y: 6.6 },
       scale: 0.55,
     });
   }
 
+
+
   if (type === 'default-exclude-flow-end') {
+    var background = svgCreate('rect');
+    svgAttr(background, {
+      x: 10,
+      y: 4,
+      width: 20,
+      height: 100,
+      fill: 'white',
+      stroke: 'none',
+    });
+
     var excludeflowEnd = svgCreate('path');
     svgAttr(excludeflowEnd, {
 
@@ -101,15 +113,17 @@ export function createMarker(addMarker, id, type, fill, stroke) {
 
     });
 
+    var excludeflowGroup = svgGroup([background, excludeflowEnd]);
+
     addMarker(id, {
-      element: excludeflowEnd,
+      element: excludeflowGroup,
       scale: 0.4,
       attrs: {
         fill: fill,
         stroke: stroke,
         strokeLinecap: 'butt',
       },
-      ref: { x: 22, y: 7.73 },
+      ref: { x: 21, y: 7.73 },
     });
   }
 
@@ -203,29 +217,38 @@ export function createMarker(addMarker, id, type, fill, stroke) {
   }
 
   if (type === 'default-milestone-flow-end') {
-    var milestoneflowEnd = svgCreate('path');
-    svgAttr(milestoneflowEnd, {
-
-      d: 'M 14.41,1.80 C 14.41,1.80 17.98,6.54 17.98,6.54 17.98,6.54 14.41,11.28 14.41,11.28 14.41,'+
-      '11.28 10.84,6.54 10.84,6.54 10.84,6.54 14.41,1.80 14.41,1.80M 14.41,0.67 C 14.41,0.67 9.99,'+
-      '6.54 9.99,6.54 9.99,6.54 14.41,12.42 14.41,12.42 14.41,12.42 18.83,6.54 18.83,6.54 18.83,'+
-      '6.54 14.41,0.67 14.41,0.67 Z M 10.53,6.59 C 10.53,6.59 5.27,9.52 5.27,9.52 5.27,9.52 0.00,'+
-      '12.46 0.00,12.46 0.00,12.46 0.01,6.57 0.01,6.57 0.01,6.57 0.03,0.69 0.03,0.69 0.03,0.69 5.28,'+
-      '3.64 5.28,3.64 5.28,3.64 10.53,6.59 10.53,6.59 Z'
-      
+    var milestoneArrowEnd = svgCreate('path');
+    svgAttr(milestoneArrowEnd, {
+      d: 'm 1 5 l 0 -3 l 7 3 l -7 3 z',
+      fill: stroke,
+      // 'stroke-width': 0.3,
+      transform: 'translate(-5, 3.5) scale(1.3)'
     });
+
+    var milestoneflowEnd = svgCreate('rect');
+    svgAttr(milestoneflowEnd, {
+      x: 0,
+      y: 0,
+      width: 8,
+      height: 8,
+      transform: 'rotate(-45 0 0) translate(-2, 12) scale(0.6)'
+    });
+
+    var milestoneflowGroup = svgGroup([milestoneArrowEnd, milestoneflowEnd]);
 
     addMarker(id, {
-      element: milestoneflowEnd,
+      element: milestoneflowGroup,
       attrs: {
-        fill: fill, 
         stroke: stroke,
-        strokeLinecap: 'butt'
+        'stroke-width': '2',
+        strokeLinecap: 'butt',
+        fill: 'white'
       },
-      ref: { x: 19.9, y: 6.8 },
-      scale: 0.55,
+      ref: { x: 15, y: 10 },
+      scale: 0.8,
     });
   }
+
     
   if (type === 'default-spawn-flow-end') {
     var spawnflowEnd = svgCreate('path');

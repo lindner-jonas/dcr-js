@@ -1,42 +1,45 @@
 import { attr as svgAttr, create as svgCreate } from 'tiny-svg';
+import { colorCondition, colorResponse, colorInclude, colorExclude, colorMilestone, svgGroup } from './markers.js';
 
 export function conditionMarker(marker, path, fill) {
   svgAttr(path, {
-    markerEnd: marker('proposed-condition-flow-end', fill, '#FF9800'),   
-    markerStart: marker('proposed-condition-flow-start', '#FF9800', '#FF9800'),
-    stroke: '#FF9800',   //yellow
+    markerEnd: marker('proposed-condition-flow-end', fill, colorCondition),   
+    markerStart: marker('proposed-condition-flow-start', colorCondition, colorCondition),
+    stroke: colorCondition,   //yellow
   });
 }
 
 export function responseMarker(marker, path, fill) {
   svgAttr(path, {
-    markerStart: marker('proposed-response-flow-start', '#039BE5', '#039BE5'),
-    markerEnd: marker('proposed-response-flow-end', fill, '#039BE5'),   
-    stroke: '#039BE5',   //blue
+    markerStart: marker('proposed-response-flow-start', colorResponse, colorResponse),
+    markerEnd: marker('proposed-response-flow-end', fill, colorResponse),   
+    stroke: colorResponse,   //blue
   });
 }
 
 export function includeMarker(marker, path, fill) {
+  console.log("INCLUDE MARKER");
+  console.log(marker('proposed-include-flow-start', colorInclude, colorInclude));
   svgAttr(path, {
-    markerStart: marker('proposed-include-flow-start', '#4CAF50', '#4CAF50'),
-    markerEnd: marker('proposed-include-flow-end', fill, '#4CAF50'),    
-    stroke: '#4CAF50'   //green
+    markerStart: marker('proposed-include-flow-start', colorInclude, colorInclude),
+    markerEnd: marker('proposed-include-flow-end', fill, colorInclude),    
+    stroke: colorInclude   //green
   });
 }
 
 export function excludeMarker(marker, path, fill) {
   svgAttr(path, {
-    markerStart: marker('proposed-exclude-flow-start', 'red', 'red'),
-    markerEnd: marker('proposed-exclude-flow-end', fill, 'red'),   
-    stroke: 'red'   //red
+    markerStart: marker('proposed-exclude-flow-start', colorExclude, colorExclude),
+    markerEnd: marker('proposed-exclude-flow-end', fill, colorExclude),   
+    stroke: colorExclude   //red
   });
 }
 
 export function milestoneMarker(marker, path, fill) {
   svgAttr(path, {
-    markerEnd: marker('proposed-milestone-flow-end', fill, '#8E24AA'),   //'#8E24AA', '#8E24AA'),
-    markerStart: marker('proposed-milestone-flow-start', fill, '#8E24AA'),
-    stroke: '#8E24AA'   //purple
+    markerEnd: marker('proposed-milestone-flow-end', fill, colorMilestone),
+    markerStart: marker('proposed-milestone-flow-start', fill, colorMilestone),
+    stroke: colorMilestone   //purple
   });
 }
 
@@ -51,33 +54,50 @@ export function spawnMarker(marker, path, fill) {
 
 
 //Create the proposed markers
-
-
 export function createMarker(addMarker, id, type, fill, stroke) {
 
   if (type === 'proposed-response-flow-end') {
-    var responseflowEnd = svgCreate('path');
+    var responseflowEnd = svgCreate('circle');
     svgAttr(responseflowEnd, {
-
-      d: 'M 19.26,10.00 C 19.26,15.11 15.11,19.26 10.00,19.26 4.89,19.26 0.74,15.11 0.74,10.00 0.74,'+
-      '4.89 4.89,0.74 10.00,0.74 15.11,0.74 19.26,4.89 19.26,10.00 Z M 8.27,15.26 C 8.27,14.26 9.02,'+
-      '13.45 9.94,13.45 10.87,13.45 11.61,14.26 11.61,15.26 11.61,16.26 10.87,17.07 9.94,17.07 9.02,'+
-      '17.07 8.27,16.26 8.27,15.26 8.27,15.26 8.27,15.26 8.27,15.26 Z M 8.43,4.40 C 8.43,4.35 8.43,'+
-      '4.29 8.43,4.23 8.43,3.33 9.10,2.59 9.94,2.59 10.77,2.59 11.45,3.33 11.45,4.23 11.45,4.29 11.45,'+
-      '4.35 11.44,4.40 11.44,4.40 10.86,10.74 10.86,10.74 10.81,11.25 10.42,11.64 9.94,11.64 9.46,'+
-      '11.64 9.07,11.25 9.02,10.75 9.02,10.75 8.43,4.40 8.43,4.40 Z',
-
+      cx: 10,
+      cy: 10,
+      r: 9,
     });
 
+    // Vertical line
+    var verticalLine = svgCreate('path');
+    svgAttr(verticalLine, {
+      d: 'M10,7 v5 a1,1 0 0 1 -1,1 h0 a1,1 0 0 1 -1,-1 v-5 a1,1 0 0 1 1,-1 h0 a1,1 0 0 1 1,1 z',
+      fill: stroke,
+      'stroke-width': 0.5,
+      transform: 'translate(1, -2)'
+    });
+
+    // Dot
+    var dot = svgCreate('circle');
+    svgAttr(dot, {
+      cx: 10,
+      cy: 14,
+      r: 0.55,
+      fill: stroke
+    });
+
+    // Group the elements together
+    var responseGroup = svgGroup([responseflowEnd, verticalLine, dot]);
+  
     addMarker(id, {
-      element: responseflowEnd,
+      element: responseGroup,
       attrs: {
-        fill: fill,
         stroke: stroke,
-        strokeLinecap: 'butt',
+        'stroke-width': '2',
+        'stroke-linecap': 'butt',
+        fill: 'white'
       },
-      ref: { x: 21, y: 10 },
-      scale: 0.45,
+      ref: {
+        x: 21,
+        y: 10
+      },
+      scale: 0.5
     });
   }
 
@@ -101,27 +121,40 @@ export function createMarker(addMarker, id, type, fill, stroke) {
     });
   }
 
+
   if (type === 'proposed-exclude-flow-end') {
-    var excludeflowEnd = svgCreate('path');
+    var excludeflowEnd = svgCreate('circle');
     svgAttr(excludeflowEnd, {
-
-      d: 'M 16.64,10.63 C 16.64,10.95 16.46,11.24 16.24,11.24 16.24,11.24 4.29,11.24 4.29,'+
-      '11.24 4.08,11.24 3.89,10.95 3.89,10.63 3.89,10.63 3.89,9.42 3.89,9.42 3.89,9.09 4.08,'+
-      '8.81 4.29,8.81 4.29,8.81 16.24,8.81 16.24,8.81 16.46,8.81 16.64,9.09 16.64,9.42 16.64,'+
-      '9.42 16.64,10.63 16.64,10.63 Z M 19.26,10.00 C 19.26,15.11 15.11,19.26 10.00,19.26 4.89,'+
-      '19.26 0.74,15.11 0.74,10.00 0.74,4.89 4.89,0.74 10.00,0.74 15.11,0.74 19.26,4.89 19.26,10.00 Z',
-
+      cx: 10,
+      cy: 10,
+      r: 9,
     });
 
+    // Minus sign
+    var minusSign = svgCreate('path');
+    svgAttr(minusSign, {
+      d: 'M5.5,10 h6 a1,1 0 0 1 1,1 v0 a1,1 0 0 1 -1,1 h-6 a1,1 0 0 1 -1,-1 v0 a1,1 0 0 1 1,-1 z',
+      fill: stroke,
+      'stroke-width': 0.3,
+      transform: 'translate(1.5, -1)'
+    });
+    
+    // Group the elements together
+    var excludeGroup = svgGroup([excludeflowEnd, minusSign]);
+  
     addMarker(id, {
-      element: excludeflowEnd,
-      scale: 0.4,
+      element: excludeGroup,
       attrs: {
-        fill: fill,
         stroke: stroke,
-        strokeLinecap: 'butt',
+        'stroke-width': '2',
+        'stroke-linecap': 'butt',
+        fill: 'white'
       },
-      ref: { x: 21, y: 8.8 },
+      ref: {
+        x: 21,
+        y: 10
+      },
+      scale: 0.5
     });
   }
 
@@ -146,29 +179,47 @@ export function createMarker(addMarker, id, type, fill, stroke) {
   }
 
   if (type === 'proposed-include-flow-end') {
-    var includeflowEnd = svgCreate('path');
+    var includeflowEnd = svgCreate('circle');
     svgAttr(includeflowEnd, {
-
-      d: 'M 14.33,9.43 C 14.33,9.43 10.59,9.43 10.59,9.43 10.59,9.43 10.59,5.68 10.59,5.68 10.59,'+
-      '5.34 10.31,5.06 9.97,5.06 9.62,5.06 9.34,5.34 9.34,5.68 9.34,5.68 9.34,9.43 9.34,9.43 9.34,'+
-      '9.43 5.61,9.43 5.61,9.43 5.26,9.43 4.99,9.70 4.99,10.05 4.99,10.39 5.26,10.67 5.61,10.67 5.61,'+
-      '10.67 9.34,10.67 9.34,10.67 9.34,10.67 9.34,14.42 9.34,14.42 9.34,14.76 9.62,15.04 9.97,'+
-      '15.04 10.31,15.04 10.59,14.76 10.59,14.42 10.59,14.42 10.59,10.67 10.59,10.67 10.59,10.67 14.33,'+
-      '10.67 14.33,10.67 14.67,10.67 14.95,10.39 14.95,10.05 14.95,9.70 14.67,9.43 14.33,9.43 14.33,'+
-      '9.43 14.33,9.43 14.33,9.43 Z M 19.26,10.00 C 19.26,15.11 15.11,19.26 10.00,19.26 4.89,19.26 0.74,'+
-      '15.11 0.74,10.00 0.74,4.89 4.89,0.74 10.00,0.74 15.11,0.74 19.26,4.89 19.26,10.00 Z',
-
+      cx: 10,
+      cy: 10,
+      r: 9,
     });
 
+    // Vertical line
+    var verticalLine = svgCreate('path');
+    svgAttr(verticalLine, {
+      d: 'M10,3.5 v10 a1,1 0 0 1 -1,1 h0 a1,1 0 0 1 -1,-1 v-10 a1,1 0 0 1 1,-1 h0 a1,1 0 0 1 1,1 z',
+      fill: stroke,
+      'stroke-width': 0.3,
+      transform: 'translate(1, 1.5)'
+    });
+
+    // Horizontal line
+    var horizontalLine = svgCreate('path');
+    svgAttr(horizontalLine, {
+      d: 'M3.5,10 h10 a1,1 0 0 1 1,1 v0 a1,1 0 0 1 -1,1 h-10 a1,1 0 0 1 -1,-1 v0 a1,1 0 0 1 1,-1 z',
+      fill: stroke,
+      'stroke-width': 0.3,
+      transform: 'translate(1.5, -1)'
+    });
+    
+    // Group the elements together
+    var excludeGroup = svgGroup([includeflowEnd, verticalLine, horizontalLine]);
+  
     addMarker(id, {
-      element: includeflowEnd,
+      element: excludeGroup,
       attrs: {
-        fill: fill,
         stroke: stroke,
-        strokeLinecap: 'butt'
+        'stroke-width': '2',
+        'stroke-linecap': 'butt',
+        fill: 'white'
       },
-      ref: { x: 21, y: 10 },
-      scale: 0.45,
+      ref: {
+        x: 21,
+        y: 10
+      },
+      scale: 0.5
     });
   }
 
@@ -193,32 +244,67 @@ export function createMarker(addMarker, id, type, fill, stroke) {
   }
 
   if (type === 'proposed-condition-flow-end') {
-    var conditionflowEnd = svgCreate('path');
+    var conditionflowEnd = svgCreate('circle');
     svgAttr(conditionflowEnd, {
-
-      d: 'M 5.57,11.87 C 4.49,11.87 3.61,11.00 3.61,9.91 3.61,8.83 4.49,7.95 5.57,7.95 6.65,7.95 7.52,'+
-      '8.83 7.52,9.91 7.52,11.00 6.65,11.87 5.57,11.87M 16.81,9.42 C 16.81,9.42 8.46,9.42 8.46,9.42 8.23,'+
-      '8.03 7.02,6.97 5.57,6.97 3.95,6.97 2.63,8.29 2.63,9.91 2.63,11.54 3.95,12.85 5.57,12.85 7.02,'+
-      '12.85 8.23,11.80 8.46,10.40 8.46,10.40 12.90,10.40 12.90,10.40 12.90,10.40 12.90,12.36 12.90,'+
-      '12.36 12.90,12.63 13.12,12.85 13.39,12.85 13.66,12.85 13.88,12.63 13.88,12.36 13.88,12.36 13.88,'+
-      '10.40 13.88,10.40 13.88,10.40 15.35,10.40 15.35,10.40 15.35,10.40 15.35,11.38 15.35,11.38 15.35,'+
-      '11.65 15.57,11.87 15.84,11.87 16.11,11.87 16.33,11.65 16.33,11.38 16.33,11.38 16.33,10.40 16.33,'+
-      '10.40 16.33,10.40 16.81,10.40 16.81,10.40 17.08,10.40 17.30,10.18 17.30,9.91 17.30,9.64 17.08,'+
-      '9.42 16.81,9.42M 19.26,10.00 C 19.26,15.11 15.11,19.26 10.00,19.26 4.89,19.26 0.74,15.11 0.74,'+
-      '10.00 0.74,4.89 4.89,0.74 10.00,0.74 15.11,0.74 19.26,4.89 19.26,10.00 Z'
-
+      cx: 10,
+      cy: 10,
+      r: 9,
     });
-
+  
+    // Inner circle
+    var innerCircle = svgCreate('circle');
+    svgAttr(innerCircle, {
+      cx: 6,
+      cy: 10,
+      r: 2.2,
+      fill: 'white',
+      stroke: stroke,
+      'stroke-width': 2,
+      transform: 'translate(0.2, 0)'
+    });
+  
+    // Horizontal line
+    var horizontalLine = svgCreate('path');
+    svgAttr(horizontalLine, {
+      d: 'M5,10 h6 a1,1 0 0 1 1,1 v0 a1,1 0 0 1 -1,1 h-6 a1,1 0 0 1 -1,-1 v0 a1,1 0 0 1 1,-1 z',
+      fill: stroke,
+      'stroke-width': 0.2,
+      transform: 'translate(4, -1)'
+    });
+  
+    // Vertical lines
+    var verticalLine1 = svgCreate('path');
+    svgAttr(verticalLine1, {
+      d: 'M10,8 v2 a1,1 0 0 1 -1,1 h0 a1,1 0 0 1 -1,-1 v-2 a1,1 0 0 1 1,-1 h0 a1,1 0 0 1 1,1 z',
+      fill: stroke,
+      'stroke-width': 0.2,
+      transform: 'translate(3.5, 2)'
+    });
+  
+    var verticalLine2 = svgCreate('path');
+    svgAttr(verticalLine2, {
+      d: 'M10,8 v2 a1,1 0 0 1 -1,1 h0 a1,1 0 0 1 -1,-1 v-2 a1,1 0 0 1 1,-1 h0 a1,1 0 0 1 1,1 z',
+      fill: stroke,
+      'stroke-width': 0.2,
+      transform: 'translate(6.5, 2)'
+    });
+  
+    // Group the elements together
+    var excludeGroup = svgGroup([conditionflowEnd, innerCircle, horizontalLine, verticalLine1, verticalLine2]);
+  
     addMarker(id, {
-      element: conditionflowEnd,
+      element: excludeGroup,
       attrs: {
-        fill: fill,
         stroke: stroke,
-        strokeLinecap: 'butt'
-        
+        'stroke-width': '2',
+        'stroke-linecap': 'butt',
+        fill: 'white'
       },
-      ref: { x: 21, y: 10 },
-      scale: 0.45,
+      ref: {
+        x: 21,
+        y: 10
+      },
+      scale: 0.5
     });
   }
 
@@ -243,59 +329,114 @@ export function createMarker(addMarker, id, type, fill, stroke) {
   }
 
   if (type === 'proposed-milestone-flow-end') {
-    var milestoneflowEnd = svgCreate('path');
+    var milestoneflowEnd = svgCreate('circle');
     svgAttr(milestoneflowEnd, {
-
-      d: 'M 5.57,11.87 C 4.49,11.87 3.61,11.00 3.61,9.91 3.61,8.83 4.49,7.95 5.57,7.95 6.65,7.95 7.52,'+
-      '8.83 7.52,9.91 7.52,11.00 6.65,11.87 5.57,11.87M 16.81,9.42 C 16.81,9.42 8.46,9.42 8.46,9.42 8.23,'+
-      '8.03 7.02,6.97 5.57,6.97 3.95,6.97 2.63,8.29 2.63,9.91 2.63,11.54 3.95,12.85 5.57,12.85 7.02,'+
-      '12.85 8.23,11.80 8.46,10.40 8.46,10.40 12.90,10.40 12.90,10.40 12.90,10.40 12.90,12.36 12.90,'+
-      '12.36 12.90,12.63 13.12,12.85 13.39,12.85 13.66,12.85 13.88,12.63 13.88,12.36 13.88,12.36 13.88,'+
-      '10.40 13.88,10.40 13.88,10.40 15.35,10.40 15.35,10.40 15.35,10.40 15.35,11.38 15.35,11.38 15.35,'+
-      '11.65 15.57,11.87 15.84,11.87 16.11,11.87 16.33,11.65 16.33,11.38 16.33,11.38 16.33,10.40 16.33,'+
-      '10.40 16.33,10.40 16.81,10.40 16.81,10.40 17.08,10.40 17.30,10.18 17.30,9.91 17.30,9.64 17.08,9.42 16.81,'+
-      '9.42M 19.26,10.00 C 19.26,15.11 15.11,19.26 10.00,19.26 4.89,19.26 0.74,15.11 0.74,10.00 0.74,'+
-      '4.89 4.89,0.74 10.00,0.74 15.11,0.74 19.26,4.89 19.26,10.00 Z'
-
-
+      cx: 10,
+      cy: 10,
+      r: 9,
     });
-
+  
+    // Inner circle
+    var innerCircle = svgCreate('circle');
+    svgAttr(innerCircle, {
+      cx: 6,
+      cy: 10,
+      r: 2.2,
+      fill: 'white',
+      stroke: stroke,
+      'stroke-width': 2,
+      transform: 'translate(0.2, 0)'
+    });
+  
+    // Horizontal line
+    var horizontalLine = svgCreate('path');
+    svgAttr(horizontalLine, {
+      d: 'M5,10 h6 a1,1 0 0 1 1,1 v0 a1,1 0 0 1 -1,1 h-6 a1,1 0 0 1 -1,-1 v0 a1,1 0 0 1 1,-1 z',
+      fill: stroke,
+      'stroke-width': 0.2,
+      transform: 'translate(4, -1)'
+    });
+  
+    // Vertical lines
+    var verticalLine1 = svgCreate('path');
+    svgAttr(verticalLine1, {
+      d: 'M10,8 v2 a1,1 0 0 1 -1,1 h0 a1,1 0 0 1 -1,-1 v-2 a1,1 0 0 1 1,-1 h0 a1,1 0 0 1 1,1 z',
+      fill: stroke,
+      'stroke-width': 0.2,
+      transform: 'translate(3.5, 2)'
+    });
+  
+    var verticalLine2 = svgCreate('path');
+    svgAttr(verticalLine2, {
+      d: 'M10,8 v2 a1,1 0 0 1 -1,1 h0 a1,1 0 0 1 -1,-1 v-2 a1,1 0 0 1 1,-1 h0 a1,1 0 0 1 1,1 z',
+      fill: stroke,
+      'stroke-width': 0.2,
+      transform: 'translate(6.5, 2)'
+    });
+  
+    // Group the elements together
+    var milestoneGroup = svgGroup([milestoneflowEnd, innerCircle, horizontalLine, verticalLine1, verticalLine2]);
+  
     addMarker(id, {
-      element: milestoneflowEnd,
+      element: milestoneGroup,
       attrs: {
-        fill: fill,
         stroke: stroke,
-        strokeLinecap: 'butt'
+        'stroke-width': '2',
+        'stroke-linecap': 'butt',
+        fill: 'white'
       },
-      ref: { x: 21, y: 10 },
-      scale: 0.45,
+      ref: {
+        x: 21,
+        y: 10
+      },
+      scale: 0.5
     });
   }
 
   if (type === 'proposed-milestone-flow-start') {
     var milestoneflowStart = svgCreate('path');
     svgAttr(milestoneflowStart, {
-
-      d: 'M 0.68,19.94 C 0.68,19.94 0.70,10.50 0.70,10.50 0.70,10.50 0.72,1.07 0.72,1.07 0.72,1.07 9.69,'+
-      '5.80 9.69,5.80 9.69,5.80 18.65,10.54 18.65,10.54 18.65,10.54 9.66,15.24 9.66,15.24 9.66,15.24 0.68,'+
-      '19.94 0.68,19.94 Z M 4.46,13.56 C 4.46,13.56 4.46,13.56 4.46,13.56 4.46,12.90 4.95,12.37 5.55,'+
-      '12.37 6.14,12.37 6.63,12.90 6.63,13.56 6.63,13.56 6.63,13.56 6.63,13.56 6.63,14.22 6.14,14.75 5.55,'+
-      '14.75 4.95,14.75 4.46,14.22 4.46,13.56 4.46,13.56 4.46,13.56 4.46,13.56 Z M 4.57,6.42 C 4.56,6.38 4.56,'+
-      '6.35 4.56,6.31 4.56,5.71 5.00,5.23 5.54,5.23 6.09,5.23 6.52,5.71 6.52,6.31 6.52,6.35 6.52,6.38 6.52,'+
-      '6.42 6.52,6.42 6.14,10.59 6.14,10.59 6.11,10.92 5.85,11.18 5.54,11.18 5.23,11.18 4.98,10.92 4.95,'+
-      '10.59 4.95,10.59 4.57,6.42 4.57,6.42 Z',
-
+      d: 'M3,1 l17,8.5 l-17,8.5 z',
+      fill: 'white',
+      stroke: stroke,
+      'stroke-width': '2',
     });
-
+  
+    // Vertical line
+    var verticalLine = svgCreate('path');
+    svgAttr(verticalLine, {
+      d: 'M10,8 v3 a1,1 0 0 1 -1,1 h0 a1,1 0 0 1 -1,-1 v-3 a1,1 0 0 1 1,-1 h0 a1,1 0 0 1 1,1 z',
+      fill: stroke,
+      'stroke-width': 0.4,
+      transform: 'translate(-2, -2)'
+    });
+  
+    // Dot
+    var dot = svgCreate('circle');
+    svgAttr(dot, {
+      cx: 10,
+      cy: 13,
+      r: 0.45,
+      fill: stroke,
+      transform: 'translate(-3, -0.6)'
+    });
+  
+    // Group the elements together
+    var responseGroup = svgGroup([milestoneflowStart, verticalLine, dot]);
+  
     addMarker(id, {
-      element: milestoneflowStart,
+      element: responseGroup,
       attrs: {
-        fill: fill,
         stroke: stroke,
-        strokeLinecap: 'butt'
+        'stroke-width': '2',
+        'stroke-linecap': 'butt',
+        fill: 'white'
       },
-      ref: { x: 0, y: 10.5 },
-      scale: 0.45,
+      ref: {
+        x: 1,
+        y: 9.5
+      },
+      scale: 0.5
     });
   }
 

@@ -111,7 +111,7 @@ var fileInput = $('<input type="file" />')
     overflow: 'hidden',
   })
   .on('change', function (e) {
-    openFile(e.target.files[0], openBoard);
+    openFile(e.target.files[0], openDCRPortalBoard);
   });
 
 var customFileInput = $('<input type="file" />')
@@ -129,6 +129,15 @@ var customFileInput = $('<input type="file" />')
 function openBoard(xml) {
   // import board
   modeler.importXML(xml).catch(function (err) {
+    if (err) {
+      return console.error('could not import dcr board', err);
+    }
+  });
+}
+
+function openDCRPortalBoard(xml) {
+  // import board
+  modeler.importDCRPortalXML(xml).catch(function (err) {
     if (err) {
       return console.error('could not import dcr board', err);
     }

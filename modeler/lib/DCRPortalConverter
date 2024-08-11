@@ -66,15 +66,15 @@ function handleEvent(event, xml, bpmn, parent, parentMap) {
     });
     bpmn["dcr:definitions"]["dcrDi:dcrRootBoard"]["dcrDi:dcrPlane"]["dcrDi:dcrShape"].push({
       $: {
-        id: `${event.$.id}_di`,
+        id: `${event.$.id}_id`,
         boardElement: event.$.id,
       },
       "dc:Bounds": {
         $: {
           x: event.custom[0]?.visualization[0]?.location[0]?.$?.xLoc,
           y: event.custom[0]?.visualization[0]?.location[0]?.$?.yLoc,
-          width: event.custom[0]?.visualization[0]?.size[0]?.$?.width,
-          height: event.custom[0]?.visualization[0]?.size[0]?.$?.height,
+          width: "130",
+          height: "150",
         }
       }
     });
@@ -187,20 +187,71 @@ function handleRelations(xml, bpmn, parentMap) {
     if (relationGroup[0] === '') continue;
     let type = Object.keys(relationGroup[0])[0];
     for (let relation of Object.values(relationGroup[0])[0]) {
+      const idNew = relation.$.sourceId + relation.$.targetId;
       parentMap.get(relation.$.sourceId)["dcr:relation"].push({
         $: {
-          id: relation.custom[0]?.id?.[0]?.$.id,
+          id: idNew,
           type: type,
           sourceRef: relation.$.sourceId,
           targetRef: relation.$.targetId,
         }
       });
+      const activities = bpmn["dcr:definitions"]["dcrDi:dcrRootBoard"]["dcrDi:dcrPlane"]["dcrDi:dcrShape"];
+      const activity1 = activities.find(a => a.$.id == relation.$.sourceId + "_id");
+      const a1x = parseInt(activity1["dc:Bounds"].$.x);
+      const a1y = parseInt(activity1["dc:Bounds"].$.y);
+      const a1w = parseInt(activity1["dc:Bounds"].$.width);
+      const a1h = parseInt(activity1["dc:Bounds"].$.height);
+      const activity2 = activities.find(a => a.$.id == relation.$.targetId + "_id");
+      const a2x = parseInt(activity2["dc:Bounds"].$.x);
+      const a2y = parseInt(activity2["dc:Bounds"].$.y);
+      const a2w = parseInt(activity2["dc:Bounds"].$.width);
+      const a2h = parseInt(activity2["dc:Bounds"].$.height);
+
+      let fromX, fromY, toX, toY;
+      let a1cx = a1x + a1w/2;
+      let a1cy = a1y + a1h/2;
+      let a2cx = a2x + a2w/2;
+      let a2cy = a2y + a2h/2;
+
+      
+      if (a1cx < a2cx && a1cy < a2cy) { // a1 is (left + above) a2
+        fromX = a1cx;
+        fromY = a1y + a1h;
+        toX = a2x;
+        toY = a2cy;
+      } else if (a1cx < a2cx && a1cy >= a2cy) { // a1 is (left + under) a2
+        fromX = a1x + a1w;
+        fromY = a1cy;
+        toX = a2cx;
+        toY = a2y + a2h;
+      } else if (a1cx >= a2cx && a1cy >= a2cy) { // a1 is (right + under) a2
+        fromX = a1cx;
+        fromY = a1y;
+        toX = a2x + a2w;
+        toY = a2cy;
+      } else { // a1 is (right + above) a2
+        fromX = a1x;
+        fromY = a1cy;
+        toX = a2cx;
+        toY = a2y;
+      }
+
+
       bpmn["dcr:definitions"]["dcrDi:dcrRootBoard"]["dcrDi:dcrPlane"]["dcrDi:relation"].push({
         $: {
-          id: `${relation.custom[0]?.id?.[0]?.$.id}_di`,
-          boardElement: relation.custom[0]?.id?.[0]?.$.id,
+          id: `${idNew}id`,
+          boardElement: idNew,
         },
-        "dcrDi:waypoint": relation.custom[0]?.waypoints[0].waypoint
+       
+       "dcrDi:waypoint": [
+            {$: {
+                x: fromX, 
+                y: fromY}}, 
+            {$: {
+              x: toX, 
+              y: toY}
+            }]
       });
     }
   }

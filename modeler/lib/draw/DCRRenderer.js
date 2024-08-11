@@ -25,6 +25,7 @@ import {
 } from './DCRRendererUtil';
 import * as DefaultMarkers from './DefaultMarkers';
 import * as ProposedMarkers from './ProposedMarkers';
+import * as NewMarkers from './newMarkers';
 import Ids from 'ids';
 
 var RENDERER_IDS = new Ids();
@@ -179,11 +180,14 @@ export default function DCRRenderer(
   }
 
   function getMarkers() {
-    if (dcrSettings.get('useNewFlowIcons')) {
-      return ProposedMarkers;
-    } else {
-      return DefaultMarkers;
-    }
+    switch (dcrSettings.get('markerNotation')) {
+      case "newMarkers": 
+        return NewMarkers;
+      case "proposedMarkers":
+        return ProposedMarkers;
+      default:
+        return DefaultMarkers;
+      }
   }
 
   function addDivider(parentGfx, element, dashed = false) {
@@ -251,7 +255,6 @@ export default function DCRRenderer(
       },
       options.attrs
     );
-
     var ref = options.ref || { x: 0, y: 0 };
 
     var scale = options.scale || 1;
@@ -265,7 +268,6 @@ export default function DCRRenderer(
     var marker = svgCreate('marker');
 
     svgAttr(options.element, attrs);
-
     svgAppend(marker, options.element);
 
     svgAttr(marker, {
@@ -275,7 +277,8 @@ export default function DCRRenderer(
       refY: ref.y,
       markerWidth: 20 * scale,
       markerHeight: 20 * scale,
-      orient: 'auto',
+      //orient: '0deg',
+      orient: "auto"
     });
 
     var defs = domQuery('defs', canvas._svg);
