@@ -106,7 +106,6 @@ UpdatePropertiesHandler.prototype.postExecute = function (context) {
 
   if (isAny(element, ['dcr:Event', 'dcr:Nesting', 'dcr:SubProcess'])) {
     element.incoming.forEach((link) => {
-      console.log(link);
       if (!this._dcrRules.isLinkAllowed(link, link.businessObject.get('type'))) {
         this._modeling.removeElements([link]);
       }

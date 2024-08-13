@@ -67,6 +67,7 @@ export default function DCRRenderer(
     });
 
     var rect = svgCreate('rect');
+    
     svgAttr(rect, {
       x: offset,
       y: offset,

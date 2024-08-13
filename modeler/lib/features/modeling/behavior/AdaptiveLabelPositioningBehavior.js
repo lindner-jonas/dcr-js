@@ -239,7 +239,6 @@ function getOptimalPosition(element) {
   var elementMid = getMid(element);
 
   var labelOrientation = getApproximateOrientation(elementMid, labelMid);
-
   if (!isAligned(labelOrientation)) {
     return;
   }

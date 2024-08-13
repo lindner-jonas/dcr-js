@@ -35,11 +35,33 @@ function generateBaseLayout() {
 }
 
 function getDescription(id, xml) {
-  return xml.specification[0].resources[0].labelMappings[0].labelMapping?.find(label => label.$.eventId === id)?.$.labelId;
+  if (xml){
+    const events = xml?.specification?.[0]?.resources?.[0]?.events?.[0]?.event;
+    if(events){
+      for (let event of events) {
+        const desc = getDescription(id, event.template?.[0]?.dcrgraph[0]);
+        if(desc) {
+          return desc;
+        }
+      }
+    }
+    return xml.specification[0].resources[0].labelMappings[0].labelMapping?.find(label => label.$.eventId === id)?.$.labelId;
+  } 
 }
 
 function getIncluded(id, xml) {
-  return xml.runtime[0].marking[0].included[0]?.event?.find(event => event.$.id === id) !== undefined;
+  if (xml){
+    const events = xml?.specification?.[0]?.resources?.[0]?.events?.[0]?.event;
+    if(events){
+      for (let event of events) {
+        if (getIncluded(id, event.template?.[0]?.dcrgraph[0])) {
+          return true;
+        }
+      }
+    }
+    return xml?.runtime?.[0]?.marking?.[0]?.included?.[0]?.event?.find(event => event.$.id === id) !== undefined;
+  } 
+  return false;
 }
 
 function getExecuted(id, xml) {
@@ -50,14 +72,52 @@ function getPending(id, xml) {
   return xml.runtime[0].marking[0].pendingResponses[0]?.event?.find(event => event.$.id === id) !== undefined;
 }
 
+const defaultWidth = 130;
+const defaultHeight = 150;
+
+function getSubEvents(event){
+  return event.event || event.template?.[0]?.dcrgraph?.[0]?.specification?.[0]?.resources?.[0]?.events?.[0]?.event;
+}
+
+function getEndLocations(event) {
+  const xStart = parseInt(event.custom[0]?.visualization[0]?.location[0]?.$?.xLoc);
+  const yStart = parseInt(event.custom[0]?.visualization[0]?.location[0]?.$?.yLoc);
+  const width = event.custom[0]?.visualization[0]?.size?.[0]?.$?.width;
+  const height = event.custom[0]?.visualization[0]?.size?.[0]?.$?.height;
+
+  if (width && height) {
+    return {x: xStart + width, y: yStart + height};
+  }
+  const minX = xStart + defaultWidth;
+  const minY = yStart + defaultHeight;
+
+  const subEvents = getSubEvents(event);
+  if (subEvents) {
+    let [w, h] = 
+      subEvents.reduce(function([maxX, maxY], e) {
+        let sB = getEndLocations(e);
+        return [Math.max(maxX, sB.x + 30), Math.max(maxY, sB.y + 30)];
+
+      }, [minX,minY])
+    return {x: w, y: h};
+  }
+  return {x: minX, y: minY};
+}
+
 function handleEvent(event, xml, bpmn, parent, parentMap) {
+  const x = parseInt(event.custom[0]?.visualization[0]?.location[0]?.$?.xLoc);
+  const y = parseInt(event.custom[0]?.visualization[0]?.location[0]?.$?.yLoc);
+  const size = getEndLocations(event);
+  const width = size.x - x;
+  const height = size.y - y;
+
   parentMap.set(event.$.id, parent);
   if (!event.$.type) {
     // Normal event
     parent["dcr:event"].push({
       $: {
         id: event.$.id,
-        role: event.custom[0]?.roles?.[0]?.role[0],
+        role: event.custom[0]?.roles?.[0]?.role.join(", "),
         description: getDescription(event.$.id, xml),
         included: getIncluded(event.$.id, xml),
         executed: getExecuted(event.$.id, xml),
@@ -71,10 +131,10 @@ function handleEvent(event, xml, bpmn, parent, parentMap) {
       },
       "dc:Bounds": {
         $: {
-          x: event.custom[0]?.visualization[0]?.location[0]?.$?.xLoc,
-          y: event.custom[0]?.visualization[0]?.location[0]?.$?.yLoc,
-          width: "130",
-          height: "150",
+          x: x,
+          y: y,
+          width: defaultWidth,
+          height: defaultHeight,
         }
       }
     });
@@ -91,6 +151,7 @@ function handleEvent(event, xml, bpmn, parent, parentMap) {
       "dcr:subProcess": [],
       "dcr:relation": [],
     });
+
     bpmn["dcr:definitions"]["dcrDi:dcrRootBoard"]["dcrDi:dcrPlane"]["dcrDi:dcrShape"].push({
       $: {
         id: `${event.$.id}_di`,
@@ -98,10 +159,10 @@ function handleEvent(event, xml, bpmn, parent, parentMap) {
       },
       "dc:Bounds": {
         $: {
-          x: event.custom[0]?.visualization[0]?.location[0]?.$?.xLoc,
-          y: event.custom[0]?.visualization[0]?.location[0]?.$?.yLoc,
-          width: event.custom[0]?.visualization[0]?.size[0]?.$?.width,
-          height: event.custom[0]?.visualization[0]?.size[0]?.$?.height,
+          x: x,
+          y: y,
+          width: width,
+          height: height
         }
       }
     });
@@ -127,20 +188,57 @@ function handleEvent(event, xml, bpmn, parent, parentMap) {
     });
     bpmn["dcr:definitions"]["dcrDi:dcrRootBoard"]["dcrDi:dcrPlane"]["dcrDi:dcrShape"].push({
       $: {
-        id: `${event.$.id}_di`,
+        id: `${event.$.id}_id`,
         boardElement: event.$.id,
       },
       "dc:Bounds": {
         $: {
-          x: event.custom[0]?.visualization[0]?.location[0]?.$?.xLoc,
-          y: event.custom[0]?.visualization[0]?.location[0]?.$?.yLoc,
-          width: event.custom[0]?.visualization[0]?.size[0]?.$?.width,
-          height: event.custom[0]?.visualization[0]?.size[0]?.$?.height,
+          x: x,
+          y: y,
+          width: width,
+          height: height,
         }
       }
     });
+  
     if (event.event) {
       for (let subEvent of event.event) {
+        handleEvent(subEvent, xml, bpmn, parent["dcr:subProcess"][parent["dcr:subProcess"].length - 1], parentMap);
+      }
+    }
+  } else if (event.$.type === 'template') {
+    // Subprocess event
+    parent["dcr:subProcess"].push({
+      $: {
+        id: event.$.id,
+        description: getDescription(event.$.id, xml),
+        included: getIncluded(event.$.id, xml),
+        executed: getExecuted(event.$.id, xml), //Include subEvents
+        pending: getPending(event.$.id, xml),
+        "multi-instance": true,
+      },
+      "dcr:event": [],
+      "dcr:nesting": [],
+      "dcr:subProcess": [],
+      "dcr:relation": [],
+    });
+    bpmn["dcr:definitions"]["dcrDi:dcrRootBoard"]["dcrDi:dcrPlane"]["dcrDi:dcrShape"].push({
+      $: {
+        id: `${event.$.id}_id`,
+        boardElement: event.$.id,
+      },
+      "dc:Bounds": {
+        $: {
+          x: x,
+          y: y,
+          width: width,
+          height: height,
+        }
+      }
+    });
+    let subEvents = getSubEvents(event);
+    if (subEvents) {
+      for (let subEvent of subEvents) {
         handleEvent(subEvent, xml, bpmn, parent["dcr:subProcess"][parent["dcr:subProcess"].length - 1], parentMap);
       }
     }
@@ -163,7 +261,7 @@ function handleSubProcesses(xml, bpmn, parentMap) {
     });
     bpmn["dcr:definitions"]["dcrDi:dcrRootBoard"]["dcrDi:dcrPlane"]["dcrDi:dcrShape"].push({
       $: {
-        id: `${subProcess.$.id}_di`,
+        id: `${subProcess.$.id}_id`,
         boardElement: subProcess.$.id,
       },
       "dc:Bounds": {
@@ -182,10 +280,18 @@ function handleSubProcesses(xml, bpmn, parentMap) {
   }
 }
 
+function getRelationType(relationGroup){
+  let t = Object.keys(relationGroup[0])[0];
+  if (t === 'templateSpawn') {
+    return "spawn";
+  }
+  return t;
+}
+
 function handleRelations(xml, bpmn, parentMap) {
   for (let relationGroup of Object.values(xml.specification[0].constraints[0])) {
     if (relationGroup[0] === '') continue;
-    let type = Object.keys(relationGroup[0])[0];
+    let type = getRelationType(relationGroup);
     for (let relation of Object.values(relationGroup[0])[0]) {
       const idNew = relation.$.sourceId + relation.$.targetId;
       parentMap.get(relation.$.sourceId)["dcr:relation"].push({
@@ -257,12 +363,48 @@ function handleRelations(xml, bpmn, parentMap) {
   }
 }
 
+function isObject(v){
+  return typeof v === 'object';
+}
+
+function checkValidGraph(dcrGraph) {
+  for(let spec of dcrGraph.specification.filter(isObject)) {
+    for(let constraint of spec.constraints.filter(isObject)) {
+      for(let c of constraint.conditions.filter(isObject)) {
+        for(let condition of c.condition.filter(isObject)){
+          if(condition.$?.time) {
+            return "\"time\" attribute is not supported.";
+          }
+        }
+      }
+    }
+    for(let res of spec.resources.filter(isObject)) {
+      for(let e of res.events.filter(isObject)) {
+        for (let event of e.event.filter(isObject)){
+          for (let custom of event.custom.filter(isObject)) {
+            for (let eventData of custom.eventData.filter(isObject)) {
+              if(eventData.dataType[0]) {
+                return "\"dataType\" attribute is not supported.";
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 export default async function convertCustomToBPMN(xml) {
   try {
     const result = await parseStringPromise(xml);
     const bpmn = generateBaseLayout();
     const parentMap = new Map(); // Map of ids and their parents
 
+    const errorMsg = checkValidGraph(result.dcrgraph);
+    if (errorMsg){
+      alert(errorMsg);
+      throw new Error(errorMsg);
+    }
     for (let event of result.dcrgraph.specification[0].resources[0].events[0].event) {
       handleEvent(event, result.dcrgraph, bpmn, bpmn["dcr:definitions"]["dcr:dcrGraph"], parentMap);
     }

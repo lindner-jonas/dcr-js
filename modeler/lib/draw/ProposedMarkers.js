@@ -18,8 +18,6 @@ export function responseMarker(marker, path, fill) {
 }
 
 export function includeMarker(marker, path, fill) {
-  console.log("INCLUDE MARKER");
-  console.log(marker('proposed-include-flow-start', colorInclude, colorInclude));
   svgAttr(path, {
     markerStart: marker('proposed-include-flow-start', colorInclude, colorInclude),
     markerEnd: marker('proposed-include-flow-end', fill, colorInclude),    
