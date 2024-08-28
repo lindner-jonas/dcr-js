@@ -67,7 +67,7 @@ export default function DCRRenderer(
     });
 
     var rect = svgCreate('rect');
-    
+
     svgAttr(rect, {
       x: offset,
       y: offset,
@@ -182,13 +182,13 @@ export default function DCRRenderer(
 
   function getMarkers() {
     switch (dcrSettings.get('markerNotation')) {
-      case "newMarkers": 
+      case "newMarkers":
         return NewMarkers;
       case "proposedMarkers":
         return ProposedMarkers;
       default:
         return DefaultMarkers;
-      }
+    }
   }
 
   function addDivider(parentGfx, element, dashed = false) {
@@ -229,7 +229,8 @@ export default function DCRRenderer(
     return pathData;
   }
 
-  function marker(type, fill, stroke) {
+  function marker(type, fill, stroke, startDirection, endDirection) {
+    //console.log("marker called", startDirection, endDirection);
     var id =
       type +
       '-' +
@@ -237,16 +238,21 @@ export default function DCRRenderer(
       '-' +
       colorEscape(stroke) +
       '-' +
-      rendererId;
+      rendererId +
+      '-' +
+      startDirection +
+      '-' +
+      endDirection;
 
     if (!markers[id]) {
-      getMarkers().createMarker(addMarker, id, type, fill, stroke);
+      getMarkers().createMarker(addMarker, id, type, fill, stroke, startDirection, endDirection);
     }
 
     return 'url(#' + id + ')';
   }
 
   function addMarker(id, options) {
+
     var attrs = assign(
       {
         fill: 'black',
@@ -384,7 +390,7 @@ export default function DCRRenderer(
         }),
         attrs
       );
-      
+
       renderDescription(parentGfx, element, 'center-top', 0);
 
       if (multiInstance) {
@@ -419,20 +425,43 @@ export default function DCRRenderer(
         stroke,
       });
 
+      // Determine direction of the arrow based on the connection waypoints
+      let waypoints = element.waypoints;
+      let start = waypoints[0];
+      let startPrev = waypoints[1];
+
+      let startDirection, endDirection;
+
+      if (start.y == startPrev.y) {
+        startDirection = start.x > startPrev.x ? 'right-to-left' : 'left-to-right';
+      } else {
+        startDirection = start.y > startPrev.y ? 'bottom-to-top' : 'top-to-bottom';
+      }
+
+      let end = waypoints[waypoints.length - 1];
+      let endPrev = waypoints[waypoints.length - 2];
+
+      if (end.y == endPrev.y) {
+        endDirection = end.x > endPrev.x ? 'left-to-right' : 'right-to-left';
+      } else {
+        endDirection = end.y > endPrev.y ? 'top-to-bottom' : 'bottom-to-top';
+      }
+
       let markers = getMarkers();
+      //console.log("waypoints", waypoints);
 
       if (type === 'condition') {
-        markers.conditionMarker(marker, path, fill);
+        markers.conditionMarker(marker, path, fill, startDirection, endDirection);
       } else if (type === 'response') {
-        markers.responseMarker(marker, path, fill);
+        markers.responseMarker(marker, path, fill, startDirection, endDirection);
       } else if (type === 'include') {
-        markers.includeMarker(marker, path, fill);
+        markers.includeMarker(marker, path, fill, startDirection, endDirection);
       } else if (type === 'exclude') {
-        markers.excludeMarker(marker, path, fill);
+        markers.excludeMarker(marker, path, fill, startDirection, endDirection);
       } else if (type === 'milestone') {
-        markers.milestoneMarker(marker, path, fill);
+        markers.milestoneMarker(marker, path, fill, startDirection, endDirection);
       } else if (type === 'spawn') {
-        markers.spawnMarker(marker, path, fill);
+        markers.spawnMarker(marker, path, fill, startDirection, endDirection);
       }
 
       return path;
@@ -464,8 +493,8 @@ export default function DCRRenderer(
         containerWidth: element.width,
         containerHeight: element.height,
         position: {
-          mx:  15 / element.width,
-          my:  50 / element.height,
+          mx: 15 / element.width,
+          my: 50 / element.height,
         },
       });
 
@@ -477,7 +506,7 @@ export default function DCRRenderer(
     },
 
     NestingMarker: function (parentGfx, element) {
-      var markerPath = pathMap.getScaledPath( 'MARKER_NESTING', {
+      var markerPath = pathMap.getScaledPath('MARKER_NESTING', {
         xScaleFactor: 1,
         yScaleFactor: 1,
         containerWidth: element.width,
@@ -490,8 +519,8 @@ export default function DCRRenderer(
 
       drawMarker('nesting', parentGfx, markerPath, {
         strokeWidth: 1,
-        fill: 'grey', 
-        stroke: 'grey', 
+        fill: 'grey',
+        stroke: 'grey',
       });
     },
 
@@ -509,8 +538,8 @@ export default function DCRRenderer(
 
       drawMarker('subprocess', parentGfx, markerPath, {
         strokeWidth: 1,
-        fill: 'grey', 
-        stroke: 'grey', 
+        fill: 'grey',
+        stroke: 'grey',
       });
     },
     MultiInstanceMarker: function (parentGfx, element) {
