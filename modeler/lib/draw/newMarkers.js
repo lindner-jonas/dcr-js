@@ -1,43 +1,43 @@
 import { attr as svgAttr, create as svgCreate } from 'tiny-svg';
-import { colorCondition, colorResponse, colorInclude, colorExclude, colorMilestone, svgGroup } from './markers.js';
+import { colorCondition, colorResponse, colorInclude, colorExclude, colorMilestone, svgGroup, getTransform } from './markers.js';
 
-export function conditionMarker(marker, path, fill) {
+export function conditionMarker(marker, path, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerEnd: marker('new-condition-flow-end', fill, colorCondition),
+    markerEnd: marker('new-condition-flow-end', fill, colorCondition, startDirection, endDirection),
     stroke: colorCondition,   //yellow
   });
 }
 
-export function responseMarker(marker, path, fill) {
+export function responseMarker(marker, path, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerStart: marker('new-response-flow-start', colorResponse, colorResponse),
+    markerStart: marker('new-response-flow-start', colorResponse, colorResponse, startDirection, endDirection),
     stroke: colorResponse,   //blue
   });
 }
 
-export function includeMarker(marker, path, fill) {
+export function includeMarker(marker, path, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerStart: marker('new-include-flow-start', colorInclude, colorInclude),
+    markerStart: marker('new-include-flow-start', colorInclude, colorInclude, startDirection, endDirection),
     stroke: colorInclude   //green
   });
 }
 
-export function excludeMarker(marker, path, fill) {
+export function excludeMarker(marker, path, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerStart: marker('new-exclude-flow-start', colorExclude, colorExclude),
+    markerStart: marker('new-exclude-flow-start', colorExclude, colorExclude, startDirection, endDirection),
     stroke: colorExclude   //red
   });
 }
 
-export function milestoneMarker(marker, path, fill) {
+export function milestoneMarker(marker, path, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerEnd: marker('new-milestone-flow-end', fill, colorMilestone),
+    markerEnd: marker('new-milestone-flow-end', fill, colorMilestone, startDirection, endDirection),
     stroke: colorMilestone   //purple
   });
 }
 
-//Create the proposed markers
-export function createMarker(addMarker, id, type, fill, stroke) {
+//Create the new markers
+export function createMarker(addMarker, id, type, fill, stroke, startDirection, endDirection) {
 
   if (type === 'new-response-flow-start') {
     var responseflowStart = svgCreate('rect');
@@ -50,22 +50,21 @@ export function createMarker(addMarker, id, type, fill, stroke) {
       ry: 2
     });
 
-    // Vertical line
+    // Inner element: Vertical line
     var verticalLine = svgCreate('path');
     svgAttr(verticalLine, {
-      d: 'M10,7 v5 a1,1 0 0 1 -1,1 h0 a1,1 0 0 1 -1,-1 v-5 a1,1 0 0 1 1,-1 h0 a1,1 0 0 1 1,1 z',
-      fill: stroke,
-      'stroke-width': 0.5,
-      transform: 'translate(1, -2)'
+      d: 'M12 0.8V5.5',
+      'stroke-width': 2.3,
+      'stroke-linecap': 'round',
+      transform: 'translate(-2, 5)'
     });
 
-    // Dot
+    // Inner element: Dot
     var dot = svgCreate('circle');
     svgAttr(dot, {
       cx: 10,
       cy: 14,
-      r: 0.55,
-      fill: stroke
+      r: 0.21,
     });
 
     // Group the elements together
@@ -76,8 +75,8 @@ export function createMarker(addMarker, id, type, fill, stroke) {
       attrs: {
         stroke: stroke,
         'stroke-width': '2',
-        'stroke-linecap': 'butt',
-        fill: 'white'
+        fill: 'white',
+        transform: getTransform(startDirection)
       },
       ref: {
         x: -0.95,
@@ -98,14 +97,16 @@ export function createMarker(addMarker, id, type, fill, stroke) {
       ry: 2
     });
   
-    // Minus sign
+    // Inner element: Minus sign
     var minusSign = svgCreate('path');
     svgAttr(minusSign, {
-      d: 'M5.5,10 h6 a1,1 0 0 1 1,1 v0 a1,1 0 0 1 -1,1 h-6 a1,1 0 0 1 -1,-1 v0 a1,1 0 0 1 1,-1 z',
+      d: 'M16 12H8',
       fill: stroke,
-      'stroke-width': 0.3,
-      transform: 'translate(1.5, -1)'
+      'stroke-width': 2,
+      'stroke-linecap': 'round',
+      transform: 'translate(-2, -2)'
     });
+
   
     // Group the elements together
     var excludeflowGroup = svgGroup([excludeflowStart, minusSign]);
@@ -115,8 +116,8 @@ export function createMarker(addMarker, id, type, fill, stroke) {
       attrs: {
         stroke: stroke,
         'stroke-width': '2',
-        'stroke-linecap': 'butt',
-        fill: 'white'
+        fill: 'white',
+        transform: getTransform(startDirection)
       },
       ref: {
         x: -0.95,
@@ -137,34 +138,26 @@ export function createMarker(addMarker, id, type, fill, stroke) {
       ry: 2
     });
 
-    // Vertical line
-    var verticalLine = svgCreate('path');
-    svgAttr(verticalLine, {
-      d: 'M10,3.5 v10 a1,1 0 0 1 -1,1 h0 a1,1 0 0 1 -1,-1 v-10 a1,1 0 0 1 1,-1 h0 a1,1 0 0 1 1,1 z',
+    // Inner element: Plus sign
+    var plusSign = svgCreate('path');
+    svgAttr(plusSign, {
+      d: 'M16 12L8 12M12 16L12 8',
       fill: stroke,
-      'stroke-width': 0.3,
-      transform: 'translate(1, 1.5)'
-    });
-
-    // Horizontal line
-    var horizontalLine = svgCreate('path');
-    svgAttr(horizontalLine, {
-      d: 'M3.5,10 h10 a1,1 0 0 1 1,1 v0 a1,1 0 0 1 -1,1 h-10 a1,1 0 0 1 -1,-1 v0 a1,1 0 0 1 1,-1 z',
-      fill: stroke,
-      'stroke-width': 0.3,
-      transform: 'translate(1.5, -1)'
+      'stroke-width': 2,
+      'stroke-linecap': 'round',
+      transform: 'translate(-2, -2)'
     });
 
     // Group the elements together
-    var excludeflowGroup = svgGroup([includeflowStart, verticalLine, horizontalLine]);
+    var excludeflowGroup = svgGroup([includeflowStart, plusSign]);
 
     addMarker(id, {
       element: excludeflowGroup,
       attrs: {
         stroke: stroke,
         'stroke-width': '2',
-        'stroke-linecap': 'butt',
-        fill: 'white'
+        fill: 'white',
+        transform: getTransform(startDirection)
       },
       ref: {
         x: -0.95,
@@ -187,7 +180,6 @@ export function createMarker(addMarker, id, type, fill, stroke) {
       attrs: {
         stroke: stroke,
         'stroke-width': '2',
-        'stroke-linecap': 'butt',
         fill: 'white'
       },
       ref: {
@@ -198,7 +190,6 @@ export function createMarker(addMarker, id, type, fill, stroke) {
     });
   }
 
-
   if (type === 'new-milestone-flow-end') {
     var milestoneflowEnd = svgCreate('circle');
     svgAttr(milestoneflowEnd, {
@@ -207,22 +198,21 @@ export function createMarker(addMarker, id, type, fill, stroke) {
       r: 9,
     });
 
-    // Vertical line
+    // Inner element: Vertical line
     var verticalLine = svgCreate('path');
     svgAttr(verticalLine, {
-      d: 'M10,7 v5 a1,1 0 0 1 -1,1 h0 a1,1 0 0 1 -1,-1 v-5 a1,1 0 0 1 1,-1 h0 a1,1 0 0 1 1,1 z',
-      fill: stroke,
-      'stroke-width': 0.5,
-      transform: 'translate(1, -2)'
+      d: 'M12 0.8V5.5',
+      'stroke-width': 2.3,
+      'stroke-linecap': 'round',
+      transform: 'translate(-2, 5)'
     });
 
-    // Dot
+    // Inner element: Dot
     var dot = svgCreate('circle');
     svgAttr(dot, {
       cx: 10,
       cy: 14,
-      r: 0.55,
-      fill: stroke
+      r: 0.21,
     });
 
     // Group the elements together
@@ -233,8 +223,8 @@ export function createMarker(addMarker, id, type, fill, stroke) {
       attrs: {
         stroke: stroke,
         'stroke-width': '2',
-        'stroke-linecap': 'butt',
-        fill: 'white'
+        fill: 'white',
+        transform: getTransform(endDirection)
       },
       ref: {
         x: 21,
