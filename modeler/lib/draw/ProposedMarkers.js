@@ -133,8 +133,8 @@ export function createMarker(addMarker, id, type, fill, stroke, startDirection, 
     });
 
     // Inner element: Minus sign
-    var innerElement = svgCreate('path');
-    svgAttr(innerElement, {
+    var minusSign = svgCreate('path');
+    svgAttr(minusSign, {
       d: 'M16 12H8',
       fill: stroke,
       'stroke-width': 2,
@@ -143,7 +143,7 @@ export function createMarker(addMarker, id, type, fill, stroke, startDirection, 
     });
 
     // Group the elements together
-    var excludeGroup = svgGroup([excludeflowEnd, innerElement]);
+    var excludeGroup = svgGroup([excludeflowEnd, minusSign]);
 
     addMarker(id, {
       element: excludeGroup,
@@ -192,9 +192,9 @@ export function createMarker(addMarker, id, type, fill, stroke, startDirection, 
       r: 9,
     });
 
-    // Inner element: Vertical line
-    var innerElement = svgCreate('path');
-    svgAttr(innerElement, {
+    // Inner element: Plus sign
+    var plusSign = svgCreate('path');
+    svgAttr(plusSign, {
       d: 'M16 12L8 12M12 16L12 8',
       fill: stroke,
       'stroke-width': 2,
@@ -203,7 +203,7 @@ export function createMarker(addMarker, id, type, fill, stroke, startDirection, 
     });
 
     // Group the elements together
-    var excludeGroup = svgGroup([includeflowEnd, innerElement]);
+    var excludeGroup = svgGroup([includeflowEnd, plusSign]);
 
     addMarker(id, {
       element: excludeGroup,
@@ -297,7 +297,6 @@ export function createMarker(addMarker, id, type, fill, stroke, startDirection, 
       attrs: {
         stroke: stroke,
         'stroke-width': '2',
-        'stroke-linecap': 'butt',
         fill: 'white',
         transform: getTransform(endDirection)
       },
@@ -384,7 +383,6 @@ export function createMarker(addMarker, id, type, fill, stroke, startDirection, 
       attrs: {
         stroke: stroke,
         'stroke-width': '2',
-        'stroke-linecap': 'butt',
         fill: 'white',
         transform: getTransform(endDirection)
       },
@@ -478,7 +476,6 @@ export function createMarker(addMarker, id, type, fill, stroke, startDirection, 
       attrs: {
         fill: fill,
         stroke: stroke,
-        strokeLinecap: 'butt'
       },
       ref: { x: 21.2, y: 7.2 },
       scale: 0.6,
