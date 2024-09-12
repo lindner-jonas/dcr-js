@@ -1,52 +1,52 @@
 import { attr as svgAttr, create as svgCreate, innerSVG } from 'tiny-svg';
-import { colorCondition, colorResponse, colorInclude, colorExclude, colorMilestone, svgGroup, getTransform } from './markers.js';
+import { svgGroup, getTransform } from './markers.js';
 
-export function conditionMarker(marker, path, fill, startDirection, endDirection) {
+export function conditionMarker(marker, path, strokeColor, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerEnd: marker('proposed-condition-flow-end', fill, colorCondition, startDirection, endDirection),
-    markerStart: marker('proposed-condition-flow-start', colorCondition, colorCondition),
-    stroke: colorCondition,   //yellow
+    markerEnd: marker('proposed-condition-flow-end', fill, strokeColor, startDirection, endDirection),
+    markerStart: marker('proposed-condition-flow-start', strokeColor, strokeColor),
+    stroke: strokeColor
   });
 }
 
-export function responseMarker(marker, path, fill, startDirection, endDirection) {
+export function responseMarker(marker, path, strokeColor, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerStart: marker('proposed-response-flow-start', colorResponse, colorResponse),
-    markerEnd: marker('proposed-response-flow-end', fill, colorResponse, startDirection, endDirection),
-    stroke: colorResponse,   //blue
+    markerStart: marker('proposed-response-flow-start', strokeColor, strokeColor),
+    markerEnd: marker('proposed-response-flow-end', fill, strokeColor, startDirection, endDirection),
+    stroke: strokeColor,
   });
 }
 
-export function includeMarker(marker, path, fill, startDirection, endDirection) {
+export function includeMarker(marker, path, strokeColor, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerStart: marker('proposed-include-flow-start', colorInclude, colorInclude),
-    markerEnd: marker('proposed-include-flow-end', fill, colorInclude, startDirection, endDirection),
-    stroke: colorInclude   //green
+    markerStart: marker('proposed-include-flow-start', strokeColor, strokeColor),
+    markerEnd: marker('proposed-include-flow-end', fill, strokeColor, startDirection, endDirection),
+    stroke: strokeColor
   });
 }
 
-export function excludeMarker(marker, path, fill, startDirection, endDirection) {
+export function excludeMarker(marker, path, strokeColor, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerStart: marker('proposed-exclude-flow-start', colorExclude, colorExclude),
-    markerEnd: marker('proposed-exclude-flow-end', fill, colorExclude, startDirection, endDirection),
-    stroke: colorExclude   //red
+    markerStart: marker('proposed-exclude-flow-start', strokeColor, strokeColor),
+    markerEnd: marker('proposed-exclude-flow-end', fill, strokeColor, startDirection, endDirection),
+    stroke: strokeColor
   });
 }
 
-export function milestoneMarker(marker, path, fill, startDirection, endDirection) {
+export function milestoneMarker(marker, path, strokeColor, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerEnd: marker('proposed-milestone-flow-end', fill, colorMilestone, startDirection, endDirection),
-    markerStart: marker('proposed-milestone-flow-start', fill, colorMilestone, startDirection, endDirection),
-    stroke: colorMilestone   //purple
-  });
+    markerEnd: marker('proposed-milestone-flow-end', fill, strokeColor, startDirection, endDirection),
+    markerStart: marker('proposed-milestone-flow-start', fill, strokeColor, startDirection, endDirection),
+    stroke: strokeColor
+});
 }
 
 
-export function spawnMarker(marker, path, fill) {
+export function spawnMarker(marker, path, strokeColor, fill) {
   svgAttr(path, {
     markerEnd: marker('proposed-spawn-flow-end', '#4D6180', '#4D6180'),
     markerStart: marker('proposed-spawn-flow-start', '#4D6180', '#4D6180'),
-    stroke: '#4D6180'
+    stroke: strokeColor
   });
 }
 
@@ -54,7 +54,6 @@ export function spawnMarker(marker, path, fill) {
 
 //Create the proposed markers
 export function createMarker(addMarker, id, type, fill, stroke, startDirection, endDirection) {
-  console.log(type);
   if (type === 'proposed-response-flow-end') {
 
     // Outer element: Circle

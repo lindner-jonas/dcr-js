@@ -1,6 +1,6 @@
 import inherits from 'inherits-browser';
-
 import { assign, isObject } from 'min-dash';
+import { colorBlack, colorCondition, colorResponse, colorInclude, colorExclude, colorMilestone, svgGroup, getTransform } from './markers.js';
 
 import {
   append as svgAppend,
@@ -230,7 +230,6 @@ export default function DCRRenderer(
   }
 
   function marker(type, fill, stroke, startDirection, endDirection) {
-    //console.log("marker called", startDirection, endDirection);
     var id =
       type +
       '-' +
@@ -448,20 +447,31 @@ export default function DCRRenderer(
       }
 
       let markers = getMarkers();
-      //console.log("waypoints", waypoints);
 
       if (type === 'condition') {
-        markers.conditionMarker(marker, path, fill, startDirection, endDirection);
+        markers.conditionMarker(marker, path,
+          dcrSettings.get('blackRelations') ? colorBlack : colorCondition, //yellow
+          fill, startDirection, endDirection);
       } else if (type === 'response') {
-        markers.responseMarker(marker, path, fill, startDirection, endDirection);
+        markers.responseMarker(marker, path, 
+          dcrSettings.get('blackRelations') ? colorBlack : colorResponse, //blue
+          fill, startDirection, endDirection);
       } else if (type === 'include') {
-        markers.includeMarker(marker, path, fill, startDirection, endDirection);
+        markers.includeMarker(marker, path, 
+          dcrSettings.get('blackRelations') ? colorBlack : colorInclude, //green
+          fill, startDirection, endDirection);
       } else if (type === 'exclude') {
-        markers.excludeMarker(marker, path, fill, startDirection, endDirection);
+        markers.excludeMarker(marker, path, 
+          dcrSettings.get('blackRelations') ? colorBlack : colorExclude, //red
+          fill, startDirection, endDirection);
       } else if (type === 'milestone') {
-        markers.milestoneMarker(marker, path, fill, startDirection, endDirection);
+        markers.milestoneMarker(marker, path, 
+          dcrSettings.get('blackRelations') ? colorBlack : colorMilestone, //purple
+          fill, startDirection, endDirection);
       } else if (type === 'spawn') {
-        markers.spawnMarker(marker, path, fill, startDirection, endDirection);
+        markers.spawnMarker(marker, path, 
+          dcrSettings.get('blackRelations') ? colorBlack : "#4D6180", //green
+          fill, startDirection, endDirection);
       }
 
       return path;

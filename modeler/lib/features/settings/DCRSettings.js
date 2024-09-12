@@ -34,6 +34,10 @@ export default function DCRSettings(commandStack, eventBus) {
     this.set('markerNotation', e.target.value);
   });
 
+  const colorToggle = document.getElementById('colorToggle');
+  colorToggle?.addEventListener('change', (e) => {
+    this.set('blackRelations', !e.target.checked);
+  });
 
   commandStack.registerHandler('settings.update', UpdateSettingsHandler);
 }

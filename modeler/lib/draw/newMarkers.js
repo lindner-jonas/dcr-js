@@ -1,38 +1,38 @@
 import { attr as svgAttr, create as svgCreate } from 'tiny-svg';
-import { colorCondition, colorResponse, colorInclude, colorExclude, colorMilestone, svgGroup, getTransform } from './markers.js';
+import { svgGroup, getTransform } from './markers.js';
 
-export function conditionMarker(marker, path, fill, startDirection, endDirection) {
+export function conditionMarker(marker, path, strokeColor, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerEnd: marker('new-condition-flow-end', fill, colorCondition, startDirection, endDirection),
-    stroke: colorCondition,   //yellow
+    markerEnd: marker('new-condition-flow-end', fill, strokeColor, startDirection, endDirection),
+    stroke: strokeColor
   });
 }
 
-export function responseMarker(marker, path, fill, startDirection, endDirection) {
+export function responseMarker(marker, path, strokeColor, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerStart: marker('new-response-flow-start', colorResponse, colorResponse, startDirection, endDirection),
-    stroke: colorResponse,   //blue
+    markerStart: marker('new-response-flow-start', strokeColor, strokeColor, startDirection, endDirection),
+    stroke: strokeColor
   });
 }
 
-export function includeMarker(marker, path, fill, startDirection, endDirection) {
+export function includeMarker(marker, path, strokeColor, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerStart: marker('new-include-flow-start', colorInclude, colorInclude, startDirection, endDirection),
-    stroke: colorInclude   //green
+    markerStart: marker('new-include-flow-start', strokeColor, strokeColor, startDirection, endDirection),
+    stroke: strokeColor
   });
 }
 
-export function excludeMarker(marker, path, fill, startDirection, endDirection) {
+export function excludeMarker(marker, path, strokeColor, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerStart: marker('new-exclude-flow-start', colorExclude, colorExclude, startDirection, endDirection),
-    stroke: colorExclude   //red
+    markerStart: marker('new-exclude-flow-start', strokeColor, strokeColor, startDirection, endDirection),
+    stroke: strokeColor
   });
 }
 
-export function milestoneMarker(marker, path, fill, startDirection, endDirection) {
+export function milestoneMarker(marker, path, strokeColor, fill, startDirection, endDirection) {
   svgAttr(path, {
-    markerEnd: marker('new-milestone-flow-end', fill, colorMilestone, startDirection, endDirection),
-    stroke: colorMilestone   //purple
+    markerEnd: marker('new-milestone-flow-end', fill, strokeColor, startDirection, endDirection),
+    stroke: strokeColor
   });
 }
 
