@@ -9,6 +9,8 @@ import DCRModeler from 'dcr-graph-diagram-modeler';
 import emptyBoardXML from './resources/emptyBoard.xml?raw';
 import sampleBoardXML from './resources/sampleBoard.xml?raw';
 
+import importGraphFromModeler from '../../../verifier/GraphImport.ts'
+
 // modeler instance
 var modeler = new DCRModeler({
   container: '#canvas',
@@ -162,6 +164,11 @@ function saveBoard() {
 }
 
 function saveDCR() {
+  // send xml to verifier
+  var sth = modeler.saveDCRXML().then((result) => {
+    importGraphFromModeler(result.xml);
+  });
+
   return modeler.saveDCRXML();
 }
 
