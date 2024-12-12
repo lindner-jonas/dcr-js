@@ -29,6 +29,10 @@ class DCR_Event {
         this.type = type;
         this.property = property;
     }
+
+    public getID(): string{
+        return this.id
+    }
 }
 
 class DCR_Constraint {
@@ -39,9 +43,13 @@ class DCR_Constraint {
         this.id = id;
         this.type = type;
     }
+    
+    public getID(): string{
+        return this.id
+    }
 }
 
-class DCR_Connection {
+class DCR_Relation {
     private fromEvent: DCR_Event;
     private toEvent: DCR_Event;
     private connector: DCR_Constraint;
@@ -57,7 +65,7 @@ export default class DCR_Graph{
 
     private events: DCR_Event[];
     private constraints: DCR_Constraint[];
-    private connections: DCR_Connection[];
+    private relations: DCR_Relation[];
     private included: string[];
     private excluded: string[];
     private pending: string[];
@@ -73,10 +81,10 @@ export default class DCR_Graph{
     // private dead_activity: [check: boolean, sound: boolean];
 
 
-    createEmpty(){
+    constructor(){
         this.events = [];
         this.constraints = [];
-        this.connections = [];
+        this.relations = [];
         this.included = [];
         this.excluded = [];
         this.pending = [];
@@ -90,10 +98,10 @@ export default class DCR_Graph{
         // this.dead_activity = [false,true];
     }
 
-    // create(events: DCR_Event[], constraints: DCR_Constraint[], connections: DCR_Connection[], included: string[], excluded: string[], pending: string[]), executed: string[]{
+    // create(events: DCR_Event[], constraints: DCR_Constraint[], relations: DCR_Relation[], included: string[], excluded: string[], pending: string[]), executed: string[]{
     //     this.events = events;
     //     this.constraints = constraints;
-    //     this.connections = connections;
+    //     this.relations = relations;
     //     this.included = included;
     //     this.excluded = excluded;
     //     this.pending = pending;
@@ -108,6 +116,10 @@ export default class DCR_Graph{
         return this.events[e];
     }
 
+    public getAllEvents(): DCR_Event[] {
+        return this.events;
+    }
+
     public addConstraint(id: string, type: DCR_Constraint_Type){
         this.constraints.push(new DCR_Constraint(id,type));
     }
@@ -116,12 +128,16 @@ export default class DCR_Graph{
         return this.constraints[c];
     }
 
-    public addConnection(fromEvent: DCR_Event, toEvent: DCR_Event, connector: DCR_Constraint){
-        this.connections.push(new DCR_Connection(fromEvent, toEvent, connector));
+    public getAllConstraints(): DCR_Constraint[] {
+        return this.constraints;
     }
 
-    public getConnection(c: number): DCR_Connection{
-        return this.connections[c];
+    public addRelation(fromEvent: DCR_Event, toEvent: DCR_Event, connector: DCR_Constraint){
+        this.relations.push(new DCR_Relation(fromEvent, toEvent, connector));
+    }
+
+    public getRelation(c: number): DCR_Relation{
+        return this.relations[c];
     }
 
     public includeEvent(id: string){
