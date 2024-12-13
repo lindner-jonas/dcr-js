@@ -10,34 +10,68 @@ const parser = new DOMParser();
 let xmlGraph;
 let dcr_graph = new DCR_Graph;
 let events = new Map();
-let terms: [string,any,any][];
+//type x = [string,any,any];
+let terms:[string,any,any][] = [];
 
 export default function importGraphFromModeler(xml: string): void{
     xmlGraph = parser.parseFromString(xml, "text/xml");
     console.log(xml);
     getEvents(xmlGraph);
-    console.log(terms);
     getTerms(xmlGraph);
 
     //addNewEvents(dcr_graph,xmlGraph);
     // addNewConstraints(dcr_graph,xmlGraph);
-
 }
 
 function getTerms(xmlGraph){
     let xmlEvents = xmlGraph.getElementsByTagName("events")[0].childNodes;
     let conditions = xmlGraph.getElementsByTagName("conditions")[0].childNodes;
+    let responses = xmlGraph.getElementsByTagName("responses")[0].childNodes;
+    let excludes = xmlGraph.getElementsByTagName("excludes")[0].childNodes;
+    let includes = xmlGraph.getElementsByTagName("includes")[0].childNodes;
+    let milestones = xmlGraph.getElementsByTagName("milestones")[0].childNodes;
 
     for (let i = 1; i < conditions.length - 1 ; i++){
         if(i % 2 == 1){
-            const source = conditions[i].sourceId;
-            const target = conditions[i].targetId;
+            var source= conditions[i].getAttribute('sourceId');
+            var target = conditions[i].getAttribute('targetId');
             terms.push(["condition",source,target]);
         }
     }
 
+    for (let i = 1; i < responses.length - 1 ; i++){
+        if(i % 2 == 1){
+            var source= responses[i].getAttribute('sourceId');
+            var target = responses[i].getAttribute('targetId');
+            terms.push(["response",source,target]);
+        }
+    }
+
+    for (let i = 1; i < excludes.length - 1 ; i++){
+        if(i % 2 == 1){
+            var source= excludes[i].getAttribute('sourceId');
+            var target = excludes[i].getAttribute('targetId');
+            terms.push(["exclude",source,target]);
+        }
+    }
+
+    for (let i = 1; i < includes.length - 1 ; i++){
+        if(i % 2 == 1){
+            var source= includes[i].getAttribute('sourceId');
+            var target = includes[i].getAttribute('targetId');
+            terms.push(["include",source,target]);
+        }
+    }
+
+    for (let i = 1; i < milestones.length - 1 ; i++){
+        if(i % 2 == 1){
+            var source= milestones[i].getAttribute('sourceId');
+            var target = milestones[i].getAttribute('targetId');
+            terms.push(["milestone",source,target]);
+        }
+    }
+
     console.log(terms);
-    //console.log(terms[0]);
 }
 
 function getEvents(xmlGraph){
