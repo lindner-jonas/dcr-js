@@ -10,6 +10,7 @@ const parser = new DOMParser();
 let xmlGraph;
 let dcr_graph = new DCR_Graph;
 let events = new Map();
+let eventsArray:string[] = [];
 //type x = [string,any,any];
 let terms:[string,any,any][] = [];
 const filename = "dcrModel.smv";
@@ -17,14 +18,16 @@ const filename = "dcrModel.smv";
 
 export default function importGraphFromModeler(xml: string): void{
     xmlGraph = parser.parseFromString(xml, "text/xml");
-    console.log(xml)
     events.clear();
     getEvents(xmlGraph);
+    eventsArray = [];
+    events.forEach((value: boolean[], id: string) => {
+        eventsArray.push(id);
+    });  
     terms = [];
     getTerms(xmlGraph);
-    console.log(terms);
-
-    var file = createText();
+    
+    var file = 0 < eventsArray.length? createText() : "you need at least one event!";
 
     //console.log(file);
     download(filename,file);
@@ -47,12 +50,64 @@ function createText(){
     events.forEach((value: boolean[], id: string) => {
         outerFile += createEventModules(id);
     });    
-    outerFile += createMain();
+    outerFile += createMainDet();
 
     return outerFile
 }
 
-function createMain(){
+function addExecutionLine(constraint,enabledSet){
+    var innerFile = "";
+    if (0 < enabledSet.length){
+        innerFile += "    " + constraint  + " : {"
+        for (let i = 0; i < enabledSet.length; i++) {
+            innerFile += enabledSet[i] + ","
+        }
+        innerFile = innerFile.substring(0, innerFile.length - 1) //delete last comma
+        innerFile += "};\n"
+    }
+    return innerFile
+}
+
+function createExecution(eventCounter,constraint,enabledSet){
+    var innerFile = ""
+    var innerPositives = enabledSet.slice();
+    var innerNegatives = enabledSet.slice();
+    if (eventCounter < eventsArray.length){
+        eventCounter += 1;
+        //FALSE
+        if(eventCounter == 1){
+            var constraintFalse = constraint + "!" + eventsArray[eventCounter-1] + ".is_enabled"
+        } else{
+            var constraintFalse = constraint + " & !" + eventsArray[eventCounter-1] + ".is_enabled"
+        }
+        innerFile += createExecution(eventCounter,constraintFalse,innerNegatives)
+
+        //TRUE
+
+        if(innerPositives.indexOf(eventsArray[eventCounter-1]) === -1) innerPositives.push(eventsArray[eventCounter-1]);
+        if(eventCounter == 1){
+            var constraintTrue = constraint + eventsArray[eventCounter-1] + ".is_enabled"
+        } else{
+            var constraintTrue = constraint + " & " + eventsArray[eventCounter-1] + ".is_enabled"
+        }
+        innerFile += createExecution(eventCounter,constraintTrue,innerPositives)
+
+        // var positivesTrue: string[] = [];
+        // positivesTrue = positives;
+        // positivesTrue.push(eventsArray[eventCounter-1])
+        // if(eventCounter == 1){
+        //     var constraintFalse = constraint + eventsArray[eventCounter-1] + ".is_enabled"
+        // } else{
+        //     var constraintFalse = constraint + " & " + eventsArray[eventCounter-1] + ".is_enabled"
+        // }
+        // innerFile += createExecution(eventCounter,constraintFalse,positivesTrue)
+    } else if(eventCounter == eventsArray.length){
+        innerFile += addExecutionLine(constraint,enabledSet);
+    }
+    return innerFile
+}
+
+function createMainDet(){
     
     var innerFile = "";
     innerFile += "MODULE main \n"
@@ -61,7 +116,82 @@ function createMain(){
     innerFile += " VAR\n  "
     events.forEach((value: boolean[], id: string) => {
         innerFile += id + ": " + id + "("
-        //console.log("value " + value);
+        for (let i = 0; i < 3 ; i++) {
+            if (value[i] == true){
+                innerFile += "TRUE,"
+            }else(
+                innerFile += "FALSE,"
+            )
+        }
+        innerFile += "self);\n  "
+    });
+
+    innerFile += "\n  execution : {null"
+    events.forEach((value: boolean[], id: string) => {
+        innerFile += "," + id
+    });
+    innerFile += "};\n\n"
+
+    // ASSIGNMENT
+    var enabledSet = [];
+    var eventCounter = 0;
+    var constraint = "";
+
+    innerFile += " ASSIGN\n  init(execution) := null;\n  next(execution) :=\n   case\n"
+    innerFile += createExecution(eventCounter,constraint,enabledSet)
+    innerFile += "    TRUE : execution;\n   esac;\n\n"
+
+    // DEFINITIONS
+    innerFile += " DEFINE\n  is_enabled := "
+    events.forEach((value: boolean[], id: string) => {
+        innerFile += id + ".is_enabled | "
+    });
+    innerFile = innerFile.substring(0, innerFile.length - 3) //delete last |
+    innerFile += ";\n  is_accepted := "
+    events.forEach((value: boolean[], id: string) => {
+        innerFile += id + ".is_accepted & "
+    });
+    innerFile = innerFile.substring(0, innerFile.length - 3) //delete last &
+    innerFile += ";\n\n"
+
+    // CTL SPECIFICATION
+    innerFile += " CTLSPEC\n "
+    // deadlock-freedom
+    innerFile += "   AG ( is_enabled | is_accepted ) -- deadlock-freedom\n"
+    // livelock-freedom
+    innerFile += "  & "
+    innerFile += "AG EF is_accepted -- livelock-freedom\n"
+    // consistency-freedom
+    innerFile += "  & "
+    innerFile += "EF is_enabled -- consistency\n"
+    // absence of dead activities
+    innerFile += "  & ("
+    events.forEach((value: boolean[], id: string) => {
+        innerFile += "(EF " + id + ".is_enabled) & "
+    });    
+    innerFile = innerFile.substring(0, innerFile.length - 3) //delete last &
+    innerFile += ") -- absence of dead activities\n"
+
+
+    /*   
+      AG ( is_enabled | is_accepted ) -- deadlock-freedom
+    & AG EF is_accepted -- livelock-freedom (less restriced version)
+    & ((EF -E_V-.is_enabled) & (EF -E_V-.is_enabled) & (EF -E_V-.is_enabled) & (EF -E_V-.is_enabled)) -- absence of dead activities ### start + loop event names + end
+    & EF is_enabled -- consistency
+    */
+
+    return innerFile
+}
+
+function createMainNonDet(){
+    
+    var innerFile = "";
+    innerFile += "MODULE main \n"
+    
+    // VARIABLES
+    innerFile += " VAR\n  "
+    events.forEach((value: boolean[], id: string) => {
+        innerFile += id + ": " + id + "("
         for (let i = 0; i < 3 ; i++) {
             if (value[i] == true){
                 innerFile += "TRUE,"
@@ -146,11 +276,11 @@ function createEventModules(id){
     innerFile += " ASSIGN\n  init(happened) := h;\n  init(included) := i;\n  init(pending) := p;\n"
     //happened
     innerFile += "  next(happened) :=\n   case\n    is_enabled & my_graph.execution = " + id
-    for (let i = 0; i < terms.length; i++){
-        if(terms[i][0] == "milestone" && terms[i][2] == id){
-            innerFile += " & !my_graph." + terms[i][1] + ".pending"
-        }
-    }
+    // for (let i = 0; i < terms.length; i++){
+    //     if(terms[i][0] == "milestone" && terms[i][2] == id){
+    //         innerFile += " & (!my_graph." + terms[i][1] + ".pending | (my_graph." + terms[i][1] + ".pending & !my_graph." + terms[i][1] + ".included))"
+    //     }
+    // }
     innerFile += " : TRUE;\n    TRUE : happened;\n   esac;\n"
     // included
     var included_empty = true;
@@ -192,8 +322,11 @@ function createEventModules(id){
         if(terms[i][0] == "condition" && terms[i][2] == id){
             innerFile += " & ( my_graph." + terms[i][1] + ".happened | !my_graph." + terms[i][1] + ".included)"
         }
+        if(terms[i][0] == "milestone" && terms[i][2] == id){
+            innerFile += " & (!my_graph." + terms[i][1] + ".pending | (my_graph." + terms[i][1] + ".pending & !my_graph." + terms[i][1] + ".included))"
+        }    
     } 
-    innerFile += "; -- conditions\n"
+    innerFile += ";\n"
     innerFile += "  is_accepted := !pending | (pending & !included);\n\n"
 
     return innerFile
@@ -256,10 +389,8 @@ function getEvents(xmlGraph){
    let happenedEvents = xmlGraph.getElementsByTagName("executed")[0].childNodes;
    let pendingEvents = xmlGraph.getElementsByTagName("pendingResponses")[0].childNodes;   
 
-   //console.log(xmlEvents);
     for (let i = 1; i < xmlEvents.length - 1 ; i++){
         if(i % 2 == 1){
-            //console.log(xmlEvents[i]);
             const id = xmlEvents[i].id;
             let included = false;
             let happened = false;
@@ -292,58 +423,8 @@ function getEvents(xmlGraph){
                 }
             }
             let e_state = [happened,included,pending];
-            console.log(e_state);
             events.set(id,e_state);
         }
 
     }
 }
-
-// function addNewEvents(graph: DCR_Graph, xmlGraph) {
-//     let xmlEvents = xmlGraph.getElementsByTagName("event");
-//     for (var xe of xmlEvents){
-//         let add = true;
-//         let graphEvents = graph.getAllEvents();
-//         for (var ge of graphEvents){
-//             let id = ge.getID();
-//             if (xe.id === id){
-//                 add = false;
-//                 console.log(id);
-//             }
-//         }
-//         if (add === true){
-//             graph.addEvent(xe.id,DCR_Event_Type[2],State[1]);
-//         }
-//     }
-//     console.log("test2");
-
-// }
-
-// function addNewConstraints(graph: DCR_Graph, xmlGraph){
-//     let relations: string[] = ["condition","response","exclude","include","milestones"];
-//     for (var _i = 0; _i < relations.length; _i++){
-//         let xmlRelation = xmlGraph.getElementsByTagName(relations[_i]);
-//         for (var xr of xmlRelation){
-//             let relationID = xmlRelation.getElementsByTagName("id")[0].textContent;
-//             let add = true;
-//             let graphConstraints = graph.getAllConstraints();
-//             for (var gc of graphConstraints){
-//                 let id = gc.getID();
-//                 if (relationID === id){
-//                     add = false;
-//                 }
-//             }
-//             if (add === true){
-//                 graph.addConstraint(xr.id,DCR_Constraint_Type[_i]);
-//             }
-//         }
-//     }
-
-// }
-
-// function addNewCondition(graph: DCR_Graph,xml){
-
-// }
-
-
-
