@@ -39,6 +39,13 @@ export default function DCRSettings(commandStack, eventBus) {
     this.set('blackRelations', !e.target.checked);
   });
 
+  // const parseToggle = document.getElementById('parseToggle');
+  // parseToggle?.addEventListener('change', (e) => {
+  //   var sth = modeler.saveDCRXML().then((result) => {
+  //       importGraphFromModeler(result.xml);
+  //   });
+  // });
+
   commandStack.registerHandler('settings.update', UpdateSettingsHandler);
 }
 

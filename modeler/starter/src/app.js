@@ -11,6 +11,8 @@ import sampleBoardXML from './resources/sampleBoard.xml?raw';
 
 import importGraphFromModeler from '../../../verifier/GraphImport.ts'
 
+
+
 // modeler instance
 var modeler = new DCRModeler({
   container: '#canvas',
@@ -77,6 +79,14 @@ document
       document.getElementById('io-dialog-main').style.display = displayProp;
     }
   });
+/*send xml to parser on change of toggle*/
+document
+  .getElementById('parseToggle')
+  .addEventListener('change', function() {
+    var sth = modeler.saveDCRXML().then((result) => {
+      importGraphFromModeler(result.xml);
+    });
+});
 
 /* file functions */
 function openFile(file, callback) {
@@ -163,11 +173,15 @@ function saveBoard() {
   return modeler.saveXML({ format: true });
 }
 
-function saveDCR() {
+function saveDCR(dcrSettings) {
   // send xml to verifier
-  var sth = modeler.saveDCRXML().then((result) => {
-    importGraphFromModeler(result.xml);
-  });
+
+  // var parseToggle = document.getElementById('parseToggle');
+  // console.log(parseToggle.value);
+
+  // var sth = modeler.saveDCRXML().then((result) => {
+  //   importGraphFromModeler(result.xml);
+  // });
 
   return modeler.saveDCRXML();
 }
