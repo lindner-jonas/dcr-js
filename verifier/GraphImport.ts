@@ -1,19 +1,10 @@
-import DCR_Graph from "./Graph";
-import DCR_Event_Type from "./Graph";
-import DCR_Constraint_Type from "./Graph";
-import State from "./Graph";
-
-
 // import updated xml string from Modeler
 // executed after every change in dcr-js
 const parser = new DOMParser();
 let xmlGraph;
-let dcr_graph = new DCR_Graph;
 let events = new Map();
 let eventsArray:string[] = [];
-//type x = [string,any,any];
 let terms:[string,any,any][] = [];
-const filename = "dcrModel.smv";
 
 
 export default function importGraphFromModeler(xml: string): void{
@@ -26,11 +17,25 @@ export default function importGraphFromModeler(xml: string): void{
     });  
     terms = [];
     getTerms(xmlGraph);
-    
-    var file = 0 < eventsArray.length? createText() : "you need at least one event!";
 
-    //console.log(file);
-    download(filename,file);
+    let filenameALL = "dcrModel_" + eventsArray.length + "events_" + terms.length + "terms_.smv";
+    let filenameDeadlock = "deadlock_freedom" + eventsArray.length + "events_" + terms.length + "terms_.smv";
+    let filenameLivelock = "livelock_freedom_" + eventsArray.length + "events_" + terms.length + "terms_.smv";
+    let filenameConsistency = "consistency_" + eventsArray.length + "events_" + terms.length + "terms_.smv";
+    let filenameAbsence = "absence_dead_activities_" + eventsArray.length + "events_" + terms.length + "terms_.smv";
+
+    console.log("before")
+    var file1 = 0 < eventsArray.length? createText("") : "you need at least one event!";
+    download(filenameALL,file1);
+    var file2 = 0 < eventsArray.length? createText("deadlock") : "you need at least one event!";
+    download(filenameDeadlock,file2);
+    var file3 = 0 < eventsArray.length? createText("livelock") : "you need at least one event!";
+    download(filenameLivelock,file3);
+    var file4 = 0 < eventsArray.length? createText("consistency") : "you need at least one event!";
+    download(filenameConsistency,file4);
+    var file5 = 0 < eventsArray.length? createText("absence") : "you need at least one event!";
+    download(filenameAbsence,file5);
+    console.log("after")
 }
 
 function download(filename, text) {
@@ -43,14 +48,13 @@ function download(filename, text) {
     document.body.removeChild(element);
 }
 
-
-function createText(){
+function createText(spec){
 
     var outerFile = "";
     events.forEach((value: boolean[], id: string) => {
-        outerFile += createEventModules(id);
+        outerFile += createEventModulesNonDet(id);
     });    
-    outerFile += createMainDet();
+    outerFile += createMainNonDet(spec);
 
     return outerFile
 }
@@ -182,8 +186,7 @@ function createMainDet(){
 
     return innerFile
 }
-
-function createMainNonDet(){
+function createMainNonDet(spec){
     
     var innerFile = "";
     innerFile += "MODULE main \n"
@@ -217,7 +220,6 @@ function createMainNonDet(){
     innerFile += "};\n\n"
 
     // DEFINITIONS
-
     innerFile += " DEFINE\n  is_enabled := "
     events.forEach((value: boolean[], id: string) => {
         innerFile += id + ".is_enabled | "
@@ -231,29 +233,42 @@ function createMainNonDet(){
     innerFile += ";\n\n"
 
     // CTL SPECIFICATION
-
     innerFile += " CTLSPEC\n "
 
-    // deadlock-freedom
-    innerFile += "   AG ( is_enabled | is_accepted ) -- deadlock-freedom\n"
+    if (spec == "deadlock"){
+    innerFile += "   AG ( is_enabled | is_accepted ) -- deadlock-freedom"
+    } else if(spec == "livelock"){
+    innerFile += "   AG EF is_accepted -- livelock-freedom"
+    } else if(spec == "consistency"){
+    innerFile += "   EF is_enabled -- consistency"
+    } else if(spec == "absence"){
+        innerFile += "  ("
+        events.forEach((value: boolean[], id: string) => {
+            innerFile += "(EF " + id + ".is_enabled) & "
+        });    
+        innerFile = innerFile.substring(0, innerFile.length - 3) //delete last &
+        innerFile += ") -- absence of dead activities"
+    } else {
+        // deadlock-freedom
+        innerFile += "   AG ( is_enabled | is_accepted ) -- deadlock-freedom\n"
 
-    // livelock-freedom
-    innerFile += "  & "
-    innerFile += "AG EF is_accepted -- livelock-freedom\n"
+        // livelock-freedom
+        innerFile += "  & "
+        innerFile += "AG EF is_accepted -- livelock-freedom\n"
 
-    // consistency-freedom
-    innerFile += "  & "
-    innerFile += "EF is_enabled -- consistency\n"
+        // consistency-freedom
+        innerFile += "  & "
+        innerFile += "EF is_enabled -- consistency\n"
 
-    // absence of dead activities
-    innerFile += "  & ("
-    events.forEach((value: boolean[], id: string) => {
-        innerFile += "(EF " + id + ".is_enabled) & "
-    });    
-    innerFile = innerFile.substring(0, innerFile.length - 3) //delete last &
-    innerFile += ") -- absence of dead activities\n"
-
-
+        // absence of dead activities
+        innerFile += "  & ("
+        events.forEach((value: boolean[], id: string) => {
+            innerFile += "(EF " + id + ".is_enabled) & "
+        });
+        innerFile = innerFile.substring(0, innerFile.length - 3) //delete last &
+        innerFile += ") -- absence of dead activities\n"
+    }
+    
     /*   
       AG ( is_enabled | is_accepted ) -- deadlock-freedom
     & AG EF is_accepted -- livelock-freedom (less restriced version)
@@ -264,7 +279,75 @@ function createMainNonDet(){
     return innerFile
 }
 
-function createEventModules(id){
+function createEventModulesDet(id){
+    
+    var innerFile = "";
+    innerFile += "MODULE " + id + "(h,i,p,my_graph)\n"
+
+    // VARIABLES
+    innerFile += " VAR\n  happened : boolean;\n  included : boolean;\n  pending : boolean;\n\n"
+
+    // ASSIGNMENT
+    innerFile += " ASSIGN\n  init(happened) := h;\n  init(included) := i;\n  init(pending) := p;\n"
+    //happened
+    innerFile += "  next(happened) :=\n   case\n    my_graph.execution = " + id
+    // for (let i = 0; i < terms.length; i++){
+    //     if(terms[i][0] == "milestone" && terms[i][2] == id){
+    //         innerFile += " & (!my_graph." + terms[i][1] + ".pending | (my_graph." + terms[i][1] + ".pending & !my_graph." + terms[i][1] + ".included))"
+    //     }
+    // }
+    innerFile += " : TRUE;\n    TRUE : happened;\n   esac;\n"
+    // included
+    var included_empty = true;
+    innerFile += "  next(included) := "
+    for (let i = 0; i < terms.length; i++){
+        if(terms[i][0] == "exclude" && terms[i][2] == id){
+            if(included_empty){
+                innerFile += "\n   case\n"
+                included_empty = false;
+            }
+            innerFile += "    my_graph.execution = " + terms[i][1] + " : FALSE; -- excluded\n"
+        }
+        if(terms[i][0] == "include" && terms[i][2] == id){
+            if(included_empty){
+                innerFile += "\n   case\n"
+                included_empty = false;
+            }
+            innerFile += "    my_graph.execution = " + terms[i][1] + " : TRUE; -- included\n"
+        }
+    }
+    if (included_empty){
+        innerFile += "included;\n"
+    } else{
+        innerFile += "    TRUE : included;\n   esac;\n"
+    }
+    // pending
+    innerFile += "  next(pending) :=\n   case\n    my_graph.execution = " + id + " : FALSE;\n"
+    for (let i = 0; i < terms.length; i++){
+        if(terms[i][0] == "response" && terms[i][2] == id){
+            innerFile += "    my_graph.execution = " + terms[i][1] + " : TRUE; -- response \n"
+        }
+    }
+    innerFile += "    TRUE : pending;\n   esac;\n\n"    
+
+
+    // DEFINITIONS
+    innerFile += " DEFINE\n  is_enabled := included"
+    for (let i = 0; i < terms.length; i++){
+        if(terms[i][0] == "condition" && terms[i][2] == id){
+            innerFile += " & ( my_graph." + terms[i][1] + ".happened | !my_graph." + terms[i][1] + ".included)"
+        }
+        if(terms[i][0] == "milestone" && terms[i][2] == id){
+            innerFile += " & (!my_graph." + terms[i][1] + ".pending | (my_graph." + terms[i][1] + ".pending & !my_graph." + terms[i][1] + ".included))"
+        }    
+    } 
+    innerFile += ";\n"
+    innerFile += "  is_accepted := !pending | (pending & !included);\n\n"
+
+    return innerFile
+}
+
+function createEventModulesNonDet(id){
     
     var innerFile = "";
     innerFile += "MODULE " + id + "(h,i,p,my_graph)\n"
@@ -381,6 +464,12 @@ function getTerms(xmlGraph){
     }
 
     //console.log(terms);
+}
+
+function getNestings(xmlGraph){
+}
+
+function getSubProcess(xmlGraph){
 }
 
 function getEvents(xmlGraph){
